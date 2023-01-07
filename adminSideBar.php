@@ -91,7 +91,7 @@ $user = $coop->home();
           <h1 class="cursor-pointer p-2 hover:bg-gray-700 rounded-md mt-1">Friends</h1>
         </div> -->
 
-        <a href="#"><div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-[#43365E]">
+        <a href="adminViewProfile.php"><div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-[#43365E]">
           <i class="fa-solid fa-gear text-gray-200"></i>
           <span class="text-[15px] ml-4 text-gray-200">Account Settings</span>
         </div></a>

@@ -3,6 +3,7 @@ require_once('plmCoopServer.php');
 $coop = new CoopServer();
 $user = $coop->home();
 $monthlySale = $coop->getMonthlySales();
+$dailySale = $coop->getDailySales();
 $productLine = $coop->getProductLine();
 $stockOnHand = $coop->getStocksOnHand();
 $criticalItem = $coop->getCriticalItems();
@@ -86,6 +87,17 @@ $time = date("h:i:sa");
                                     <ul class="text-4xl font-bold text-left"><b><?= $numofTransactions; ?></b></ul>  
                                     <ul class="text-lg font-semibold text-left"><b>TRANSACTIONS</b></ul> 
                                     <ul class="text-sm text-left">Total transactions made today</ul> 
+                                </div>
+                            </div>
+
+                            <div class="border-2 border-[#221E3F] flex-1 bg-[#FCE4BE] text-[#221E3F] rounded-3xl h-[10rem] mx-3 my-5 p-2 grid grid-cols-3 drop-shadow-md items-center col-span-3 divide-x-8 divide-[#221E3F]">
+                                <div class="col-span-1 flex items-center justify-center pl-3">
+                                    <img src="static/icons/sales.png" width="90" height="90">
+                                    <p class="text-5xl font-bold text-left pl-3"><b><?= $dailySale ?></b></p>
+                                </div>
+                                <div class="col-span-2 text-lg pl-8">
+                                    <ul class="text-3xl font-semibold text-left"><b>SALES TODAY</b></ul> 
+                                    <ul class="text-md text-left"><b>Date: </b><?= $dateDay." ".$date ?></ul> 
                                 </div>
                             </div>
                         </div>

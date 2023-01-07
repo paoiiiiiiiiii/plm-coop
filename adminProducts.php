@@ -91,7 +91,7 @@ $counter1 = 0;
                                                     <td><?= $categories['category_id']?></td>
                                                     <td><?= $categories['category_name']?></td>
                                                     <td><?= $coop->getNumberProductsPerCategory($categories['category_id']); ?></td>
-                                                    <td><a href="adminProducts.php?categoryID=<?= $categories['category_id'] ?>">Select</a></td>
+                                                    <td><a href="adminProducts.php?categoryID=<?= $categories['category_id'] ?>"><button class="ml-1 rounded-lg bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-sm">Select</button></a></td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         <?php }?>
@@ -106,36 +106,52 @@ $counter1 = 0;
                                     <div class="col-span-2 bg-[#221E3F] rounded-t-lg py-2"><b><p class="text-white text-center">Category Details:</p></b></div>
                                     <form method="post" action="adminProducts.php" class="grid grid-cols-2 col-span-2 px-4 pt-3">
                                         
-                                        <div class="col-span-2"><img src="thumbnails/<?= $categoryDetails['thumbnail']; ?>" width="40" height="40"></div>
-                                        <p class="text-sm text-white mt-2 mb-1"><b>Category ID: </b></p>
-                                        <p class="text-sm text-white mt-2"><?= $categoryDetails['category_id'];?></p>
-                                        <input type="text" name="categoryID" value = "<?= $categoryDetails['category_id'];?>" hidden>
-                                        
+                                        <?php if ($categoryDetails) { ?>
+                                            <div class="col-span-2 flex justify-center"><img src="thumbnails/<?= $categoryDetails['thumbnail']; ?>" width="80px" height="80px"></div>
+                                            <p class="text-sm text-white mt-3 mb-1"><b>Category ID: </b></p>
+                                            <p class="text-sm text-white mt-3"><?= $categoryDetails['category_id'];?></p>
+                                            <input type="text" name="categoryID" value = "<?= $categoryDetails['category_id'];?>" hidden>
                                     
-                                        <label class="text-white text-sm"><b>Category Name: </b></label>
-                                        <input type="text" name="categoryName" required class="rounded-md bg-[#efefef] p-1 text-sm mb-1" value = "<?= $categoryDetails['category_name'];?>">
-                                        
+                                    
+                                            <label class="text-white text-sm"><b>Category Name: </b></label>
+                                            <input type="text" name="categoryName" required class="rounded-md bg-[#efefef] p-1 text-sm mb-1" value = "<?= $categoryDetails['category_name'];?>">
+                                            
 
-                                        <div class="my-3 col-span-2 grid grid-cols-3">
-                                            <button name="removeCategory" type="submit" class="rounded-lg text-white bg-[#5094c8] rounded-md hover:bg-[#eaf8ff] hover:text-[#2986CC] p-2 text-xs">Remove</button>
-                                            <button name="updateCategory" type="submit" class="ml-1 rounded-lg text-white bg-[#5094c8] rounded-md hover:bg-[#eaf8ff] hover:text-[#2986CC] p-2 text-xs">Update</button>
-                                        </div>
+                                            <div class="my-3 col-span-2 grid grid-cols-2">
+                                                <button name="removeCategory" type="submit" class="rounded-lg text-white bg-[#5094c8] rounded-md hover:bg-[#eaf8ff] hover:text-[#2986CC] p-2 text-xs">Remove</button>
+                                                <button name="updateCategory" type="submit" class="ml-1 rounded-lg text-white bg-[#5094c8] rounded-md hover:bg-[#eaf8ff] hover:text-[#2986CC] p-2 text-xs">Update</button>
+                                            </div>
+
+                                        <?php } else { ?>
+                                            <div class="col-span-2 flex justify-center"><div class="w-[80px] h-[80px] bg-white"></div></div>
+                                            <p class="text-sm text-white mt-3 mb-1"><b>Category ID: </b></p>
+                                            <p class="text-sm text-white mt-3">No Category Selected</p>
+                                    
+                                    
+                                            <label class="text-white text-sm"><b>Category Name: </b></label>
+                                            <input type="text" name="categoryName" required class="rounded-md bg-[#efefef] p-1 text-sm mb-1" value = "<?= $categoryDetails['category_name'];?>" disabled>
+                                            
+
+                                            <div class="my-3 col-span-2 grid grid-cols-2">
+                                                <button name="removeCategory" type="submit" class="rounded-lg text-white bg-[#5094c8] rounded-md hover:bg-[#eaf8ff] hover:text-[#2986CC] p-2 text-xs">Remove</button>
+                                                <button name="updateCategory" type="submit" class="ml-1 rounded-lg text-white bg-[#5094c8] rounded-md hover:bg-[#eaf8ff] hover:text-[#2986CC] p-2 text-xs">Update</button>
+                                            </div>
+                                        <?php } ?>
                                     </form>
                                 </div>
 
                                 <div class="flex-1 items-center rounded-lg h-auto bg-[#67b0e7] mt-2 grid grid-cols-2">
-                                    <div class="col-span-2 bg-[#221E3F] rounded-t-lg py-2"><b><p class="text-white text-center">Category Details:</p></b></div>
-                                    <form method="post" action="adminProducts.php" class="grid grid-cols-2 col-span-2" enctype="multipart/form-data">
-                                        <div class="col-span-2"><b><p class="text-white text-center">ADD CATEGORY</p></b></div>
+                                    <div class="col-span-2 bg-[#221E3F] rounded-t-lg py-2"><b><p class="text-white text-center">ADD CATEGORY</p></b></div>
+                                    <form method="post" action="adminProducts.php" class="grid grid-cols-2 col-span-2 px-4 pt-5" enctype="multipart/form-data">
                                     
                                         <label class="text-white text-sm"><b>Category Name: </b></label>
                                         <input type="text" name="categoryName" required class="rounded-md bg-[#efefef] p-1 text-sm mb-1">
                                         
-                                        <label class="text-white text-sm"><b>Thumbnail: </b></label>
-                                        <input type="file" name="categoryThumbnail" required>
+                                        <label class="text-white text-sm mt-3"><b>Thumbnail: </b></label>
+                                        <input type="file" name="categoryThumbnail" required class="mt-2">
 
-                                        <div class="my-3 col-span-2 grid grid-cols-3">
-                                            <button name="addCategory" type="submit" class="rounded-lg text-white bg-[#5094c8] rounded-md hover:bg-[#eaf8ff] hover:text-[#2986CC] p-2 text-xs">Add</button>
+                                        <div class="my-3 col-span-2 flex justify-center">
+                                            <button name="addCategory" type="submit" class="rounded-lg text-white w-48 bg-[#5094c8] rounded-md hover:bg-[#eaf8ff] hover:text-[#2986CC] p-2 text-xs">Add</button>
                                         </div>
                                     </form>
                                 </div>
@@ -144,48 +160,64 @@ $counter1 = 0;
                         </div>
                     </div>
                     
-                    <div class="w-full bg-white mt-5 grid grid-cols-4">
-                        <p class="col-span-3 text-3xl font-bold">PRODUCTS</p>
-                        <a href="adminAddProducts.php"><button>Add products</button></a>
-                    </div>
+                    <div class="bg-[#FCE4BE] w-full h-[48rem] rounded-3xl mt-5 mb-10">
+                        <div class="w-full bg-[#FCE4BE] grid grid-cols-4 rounded-t-3xl px-10 pt-10 pb-5">
+                            <p class="text-4xl font-extrabold w-full px-3 text-[#221E3F] col-span-2">Products per Category</p>
+                            <div></div>
+                            <a href="adminAddProducts.php" class="col-span-1 text-right"><button class="flex w-48 h-[40px] text-md text-white mb-2 rounded-full bg-[#221E3F] px-4 text-white hover:bg-[#6257b4]"><p class="ml-2 text-3xl font-bold">+</p> <p class="ml-3 mt-2">Add products</p></button></a>
+                        </div>
 
-                    <div class="flex bg-white w-full h-[32rem] py-5">
-                        <div class="justify-self-start w-full bg-[#f0faff] rounded-bl-lg overflow-auto max-h-106">
-                            <?php if($category){ ?>
-                                    <?php foreach($category as $categories): ?>
-                                        <?php $product = $coop->getAdminProduct($categories['category_id']); ?>
-                                            <div class="h-auto w-full my-2 bg-white rounded-md cursor-pointer px-5 py-5">
-                                                <div class='w-full'>
-                                                    <p class="">CATEGORY: <?= $categories['category_name']; ?></p>
-                                                </div>
-                                                <div class="w-full">
-                                                    <table class="justify-self-stretch w-full m-auto">
-                                                            <thead>
-                                                                <td></td>
-                                                                <td>Product Code</td>
-                                                                <td>Product Name</td>
-                                                                <td>Product Price</td>
-                                                                <td>Stocks on Hand</td>
-                                                                <td></td>
-                                                            </thead>
-                                                    <?php foreach($product as $products): ?>
+                        <div class="flex bg-[#FCE4BE] w-full h-[39rem] px-10">
+                            <div class="justify-self-start w-full bg-[#FCE4BE] overflow-auto max-h-106">
+                                <?php if($category){ ?>
+                                        <?php foreach($category as $categories): ?>
+                                            <?php $product = $coop->getAdminProduct($categories['category_id']); ?>
+                                                <div class="h-auto w-full my-4 bg-[#221E3F] rounded-lg cursor-pointer">
+                                                    <div class='w-full'>
+                                                        <p class="text-white py-3 px-4 font-bold">CATEGORY: <?= $categories['category_name']; ?></p>
+                                                    </div>
+                                                    <div class="w-full bg-[#ffd695] ">
+                                                        <table class="justify-self-stretch w-full m-auto">
+                                                                <thead class="bg-[#e5c38c] text-black font-bold">
+                                                                    <td></td>
+                                                                    <td class="py-2">Product Code</td>
+                                                                    <td>Product Name</td>
+                                                                    <td>Product Price</td>
+                                                                    <td>Stocks on Hand</td>
+                                                                    <td></td>
+                                                                </thead>
+
+                                                        <?php if ($product) { ?>
+                                                            <?php foreach($product as $products): ?>
+                                                                    <tr class="cursor-pointer hover:bg-[#e8d2ae]">
+                                                                        <td class="py-2 px-3"><img src="thumbnails/<?= $products['thumbnail']; ?>" height="50" width="50"></td>
+                                                                        <td><?= $products['product_code']; ?></td>
+                                                                        <td><?= $products['product_name']; ?></td>
+                                                                        <td><?= $products['product_price']; ?></td>
+                                                                        <td><?= $products['product_quantity']; ?></td>
+                                                                        <td><a href='adminViewProducts.php?productID=<?= $products['product_id'];?>'><button class="ml-1 rounded-lg bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-sm">View</button></a></td>
+                                                                    </tr>
+                                                            <?php endforeach; ?>
+                                                        <?php } else { ?>
                                                             <tr>
-                                                                <td><img src="thumbnails/<?= $products['thumbnail']; ?>" height="50" width="50"></td>
-                                                                <td><?= $products['product_code']; ?></td>
-                                                                <td><?= $products['product_name']; ?></td>
-                                                                <td><?= $products['product_price']; ?></td>
-                                                                <td><?= $products['product_quantity']; ?></td>
-                                                                <td><a href='adminViewProducts.php?productID=<?= $products['product_id'];?>'>View</a></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td class="py-2">There are no products in this category!</td>
+                                                                <td></td>
+                                                                <td></td>
                                                             </tr>
-                                                    <?php endforeach; ?>
-                                                    </table>
+                                                        <?php } ?>
+                                                        </table>
+
+                                                    </div>
                                                 </div>
-                                            </div>
-                                    <?php endforeach; ?>
-                            <?php }?>
-                            <?php if(!$category) {?>
-                                    <p>THERE ARE NO CATEGORIES!</p>
-                            <?php } ?>
+                                        <?php endforeach; ?>
+                                <?php }?>
+                                <?php if(!$category) {?>
+                                        <p>THERE ARE NO CATEGORIES!</p>
+                                <?php } ?>
+                            </div>
                         </div>
                     </div>
 

@@ -20,55 +20,51 @@ $time = date("h:i:sa");
     </title>
     <!-- <link rel="icon" type="image/png" href="static/images/logo.png"> -->
     <link href="styles.css" rel="stylesheet">    
+    <script src="assets/js/tailwind.js"></script>
+    <link rel="stylesheet" href="assets/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/fonts.css">
 </head>
-<body>
-	<body class="bg-[#9ed5f0]">    	
-        <div class="w-full h-full flex">
-            <div class="w-[310px]">
-                <?php include 'adminSideBar.php'; ?>
-            </div>
+<body class="bg-[#221E3F]">    	
+    <div class="w-full h-full flex">
+        <div class="w-[310px]">
+            <?php include 'adminSideBar.php'; ?>
+        </div>
 
-            <div class="w-full h-auto px-10 py-10">
-                <div class="bg-[#eaf8ff] rounded-lg flex flex-col w-full">
-                    <div class="w-full">
-                        <p class="text-3xl font-bold w-full">MANAGE IN-STORE TRANSACTIONS</p>
-                        <!-- <form action = "adminTransactions.php" method = "POST">
-                            <select name="processType" id="process" >
-                                <?php if ($filterTransactionProcess == 'online') { ?>
-                                    <option value='all'>All</option>
-                                    <option value='online' selected>Online</option>
-                                    <option value='instore'>In-Store</option>
+        <div class="w-full h-screen px-10 py-5">
+            <div class="bg-[#FCE4BE] rounded-3xl flex flex-col w-full h-full px-10 py-10">
+                <div class="w-full">
+                    <p class="text-4xl font-extrabold w-full px-3 text-[#221E3F]">In-Store Transactions</p>
+                    <div class="flex my-5 mr-5">
+                        <form action = "adminInStoreTransactions.php" method = "GET" class="flex ml-3">
+                            <label class="ml-2 text-md text-[#221E3F] font-bold mt-1 mr-1">From:</label>
+                            <input type="date" name="from" class="ml-2 outline outline-offset-2 outline-[#221E3F] rounded-md h-[30px]" required></input>
+                            <label class="text-md text-[#221E3F] font-bold mt-1 ml-3 mr-1">To:</label>
+                            <input type="date" name="to" class="ml-2 outline outline-offset-2 outline-[#221E3F] rounded-md h-[30px]" required></input>
+                            <button type="submit" name="betweenDates" class="ml-1 rounded-lg bg-[#67b0e7] text-white hover:bg-[#2986CC] text-sm h-[32px] px-2 ml-2">Pick Dates</button>
+                        </form>
 
-                                <?php } else if ($filterTransactionProcess == 'instore') { ?>
-                                    <option value='all'>All</option>
-                                    <option value='online'>Online</option>
-                                    <option value='instore' selected>In-Store</option>
+                        <form method="GET" action="adminInStoreTransactions.php" class="flex ml-10 justify-end">
+                            <input type="text" name="searchTag" placeholder="Search Trans ID" class="ml-2 rounded-md h-[30px] pl-2" required></input>
+                            <button type="submit" name="searchTransactions" class="ml-2 rounded-lg bg-[#67b0e7] text-white hover:bg-[#2986CC] text-sm h-[30px] px-2"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        </form>
+                    </div>
 
-                                <?php } else { ?>
-                                    <option value='all' selected>All</option>
-                                    <option value='online'>Online</option>
-                                    <option value='instore'>In-Store</option>
-
-                                <?php } ?>
-                            </select>
-                            <button type="submit" name="process">GO</button>
-                        </form> -->
-
-                        <div class="w-full flex"> 
-                            <table class="justify-self-stretch w-full m-auto ">
-                                    <thead>
-                                        <td>Transaction ID</td>
+                    <div class="w-full flex h-[36rem] bg-[#FCE4BE] rounded-lg"> 
+                        <div class="justify-self-start w-full overflow-auto max-h-106 bg-white rounded-lg">
+                            <table class="justify-self-stretch w-full m-auto">
+                                    <thead class="font-semibold text-md bg-[#221E3F] text-white sticky top-0">
+                                        <td class="px-3 py-3 rounded-tl-lg">Trans ID</td>
                                         <td>Date</td>
                                         <td>Customer Name</td>
                                         <td>Amount</td>
                                         <td>Transaction State</td>
                                         <td>Transaction Process</td>
                                         <td>Cashier Name</td>
-                                        <td>View</td>
+                                        <td class="rounded-tr-lg"></td>
                                     </thead>
                             <?php foreach($inStoreTransaction as $transactions): ?>
-                                    <tr>
-                                        <td><?= $transactions['transaction_id']; ?></td>
+                                    <tr class="text-md cursor-pointer hover:bg-[#eeeeee]">
+                                        <td class="py-3 px-3"><?= $transactions['transaction_id']; ?></td>
                                         <td><?= $transactions['date']; ?></td>
                                         <td><?= $transactions['name']; ?></td>
                                         <td><?= $transactions['amount']; ?></td>
@@ -79,16 +75,21 @@ $time = date("h:i:sa");
                                             <td>In-Store</td>
                                         <?php } ?>
                                         <td><?= $transactions['cashier_name']; ?></td>
-                                        <td><a href='adminViewTransaction.php?transactionID=<?=$transactions['transaction_id'];?>'>View Details</a></td>
+                                        <td><a href='adminViewTransaction.php?transactionID=<?=$transactions['transaction_id'];?>'><button class="ml-1 rounded-lg bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-sm">View</button></a></td>
                                     </tr>
                             <?php endforeach; ?>
                             </table>
+                            <?php if(!$inStoreTransaction) {?>
+                                <div class="flex items-center justify-center h-[30rem] w-full">
+                                    <p class="text-center">NO IN - STORE TRANSACTIONS!</p>
+                                <div>
+                            <?php } ?>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </body>
+    </div>
 </body>
 
 </html>

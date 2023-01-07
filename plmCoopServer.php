@@ -2,6 +2,7 @@
 //require_once('mailer.php');
 session_start();
 error_reporting(E_ALL & ~E_NOTICE);
+date_default_timezone_set('Asia/Manila');
 Class CoopServer{
 	
 
@@ -211,7 +212,12 @@ Class CoopServer{
 					$sql = $connection->prepare("INSERT INTO user_profile VALUES ('$activeUser', '$telNum', '$houseNo', '$baranggay', '$city', '$region'); ");
 					$sql->execute();
 
-					header('location:customerDashboard.php');
+					if ($_SESSION['role'] == 'admin') {
+						header('location:adminViewProfile.php');
+					} else {
+						header('location:customerDashboard.php');
+					}
+					
 				} else {
 					$connection = $this->openConnection();
 					$sql = $connection->prepare("UPDATE users SET phone_number = '$phoneNum', email = '$email', fname = '$fname', lname = '$lname' WHERE user_id = '$activeUser'; ");
@@ -220,7 +226,12 @@ Class CoopServer{
 					$sql = $connection->prepare("UPDATE user_profile SET phone_number = '$telNum', house_no = '$houseNo', baranggay = '$baranggay', city = '$city', region = '$region' WHERE user_id = '$activeUser'; ");
 					$sql->execute();
 
-					header('location:customerProfile.php');
+					
+					if ($_SESSION['role'] == 'admin') {
+						header('location:adminViewProfile.php');
+					} else {
+						header('location:customerDashboard.php');
+					}
 				}
 			}
 		} else {
@@ -1095,6 +1106,27 @@ Class CoopServer{
 
 	// ================================= ALL FUNCTIONS USED IN ADMIN CLIENT =================================================
 
+	public function getDailySales(){
+		date_default_timezone_set('Asia/Manila');
+		$day = date("d");
+		$month = date("m");
+		$year = date('Y');
+
+		$connection = $this->openConnection();
+		$query = "SELECT date,amount FROM transactions WHERE EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year'  AND EXTRACT(DAY FROM date) = '$day' AND state = 'completed';";
+		$sql = $connection->prepare($query);
+		$sql->execute();
+		$sales = $sql->fetchAll();
+
+		$dailySales = 0;
+
+		foreach ($sales as $dailySale){
+			$dailySales += $dailySale['amount'];
+		}
+
+		return $dailySales;//-$monthlyCancelledSales;
+	}
+
 	public function getMonthlySales(){
 		$month = date("m");
 		$year = date('Y');
@@ -1215,8 +1247,8 @@ Class CoopServer{
 	public function getUsers(){
 		if ($_SESSION['authentication']) {
 			if ($_SESSION['role'] == 'admin') {
-				if (isset($_POST['userRole'])){
-					$role = $_POST['role'];
+				if (isset($_GET['userRole'])){
+					$role = $_GET['role'];
 					
 					if ($role == 'staff') {
 						$connection = $this->openConnection();
@@ -1256,6 +1288,37 @@ Class CoopServer{
 					$_SESSION['user_role'] = 'all';
 
 					return $users;
+
+				} else if (isset($_GET['searchUsers'])){
+					$role = $_GET['role'];
+					$searchTag = $_GET['searchTag'];
+
+					if ($role == 'staff') {
+						$connection = $this->openConnection();
+						$sql = $connection->prepare("SELECT * FROM users WHERE role = 'staff' AND (fname LIKE '%$searchTag%' OR lname LIKE '%$searchTag%' OR user_id LIKE '%$searchTag%');");
+						$sql->execute();
+						$users = $sql->fetchAll();
+						$_SESSION['user_role'] = 'staff';
+
+						return $users;
+					} else if ($role == 'customer') {
+						$connection = $this->openConnection();
+						$sql = $connection->prepare("SELECT * FROM users WHERE role = 'customer' AND (fname LIKE '%$searchTag%' OR lname LIKE '%$searchTag%' OR user_id LIKE '%$searchTag%');");
+						$sql->execute();
+						$users = $sql->fetchAll();
+						$_SESSION['user_role'] = 'customer';
+
+						return $users;
+					} else {
+						$connection = $this->openConnection();
+						$sql = $connection->prepare("SELECT * FROM users WHERE fname LIKE '%$searchTag%' OR lname LIKE '%$searchTag%' OR user_id LIKE '%$searchTag%';");
+						$sql->execute();
+						$users = $sql->fetchAll();
+						$_SESSION['user_role'] = 'all';
+
+						return $users;
+					}
+
 				} else {
 					$connection = $this->openConnection();
 					$sql = $connection->prepare("SELECT * FROM users;");
@@ -1275,6 +1338,49 @@ Class CoopServer{
 
 	public function getUserRole(){
 		return $_SESSION['user_role'];
+	}
+
+	public function adminAddUser(){
+		if ($_SESSION['role']=='admin') {
+			if (isset($_POST['register_user'])) {
+				$email = $_POST['email'];
+				$_SESSION['email'] = $email;
+				$password1 = $_POST['password_1'];
+				$password2 = $_POST['password_2'];
+				$firstname = $_POST['fname'];
+				$lastname = $_POST['lname'];
+				$phoneNum = $_POST['phoneNum'];
+				$userRole= $_POST['userRole'];
+
+				$connection = $this->openConnection();
+				$sql = $connection->prepare("SELECT * FROM users WHERE email = '$email';");
+				$sql->execute();
+				$user = $sql->fetchAll();
+				$userCount = $sql->rowCount();		
+
+				if ($userCount == 1){
+					echo("Username/email already exists");
+				} else {
+					if (empty($email) or empty($password1) or empty($password2) or empty($firstname) or empty($lastname)or empty($phoneNum)or empty($userRole)) { 
+						echo("PLEASE FILL UP ALL THE FIELDS"); 
+					} else {
+						if ($password1 == $password2){
+							$password = md5($password1);
+							$connection = $this->openConnection();
+							$sql = $connection->prepare(
+								"INSERT INTO users(email, password, role, phone_number, fname, lname) VALUES ('$email', '$password', '$userRole', '$phoneNum', '$lastname', '$firstname')");
+							$sql->execute();
+
+							header('location:adminManageUsers.php');
+							
+						} else {
+							$_SESSION['message'] = "The two passwords do not match!";
+							header('location:adminAddUser.php');
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public function getAdminProductCategory(){
@@ -1537,77 +1643,64 @@ Class CoopServer{
 		}
 	}
 
-	// public function getAdminTransactions(){
-	// 	if ($_SESSION['authentication']) {
-	// 		if ($_SESSION['role'] == 'admin') {
-	// 			if (isset($_POST['process'])){
-	// 				$processType = $_POST['processType'];
-					
-	// 				if ($processType == 'online') {
-	// 					$connection = $this->openConnection();
-	// 					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE online = '1' ORDER BY transaction_id DESC;");
-	// 					$sql->execute();
-	// 					$transaction = $sql->fetchAll();
-	// 					$_SESSION['transaction_process'] = 'online';
-
-	// 					return $transaction;
-	// 				} else if ($processType == 'instore') {
-	// 					$connection = $this->openConnection();
-	// 					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE online = '0' ORDER BY transaction_id DESC;");
-	// 					$sql->execute();
-	// 					$transaction = $sql->fetchAll();
-	// 					$_SESSION['transaction_process'] = 'instore';
-
-	// 					return $transaction;
-	// 				} else {
-	// 					$connection = $this->openConnection();
-	// 					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id ORDER BY transaction_id DESC;");
-	// 					$sql->execute();
-	// 					$transaction = $sql->fetchAll();
-	// 					$_SESSION['transaction_process'] = 'all';
-
-	// 					return $transaction;
-	// 				}
-	// 			} else {
-	// 				$connection = $this->openConnection();
-	// 				$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id ORDER BY transaction_id DESC;");
-	// 				$sql->execute();
-	// 				$transaction = $sql->fetchAll();
-	// 				$_SESSION['transaction_process'] = 'all';
-
-	// 				return $transaction;
-	// 			}
-	// 		} else {
-
-	// 		}
-	// 	} else {
-	// 		header('location:login.php');
-	// 	}
-	// }
-
-	// public function returnTransactionProcess() {
-	// 	return $_SESSION['transaction_process'];
-	// }
-
 	public function getAdminTransactions($transactionProcess){
 		if ($_SESSION['authentication']) {
 			if ($_SESSION['role'] == 'admin') {
-				if ($transactionProcess == 'instore') {
-					$connection = $this->openConnection();
-					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE online = '0' ORDER BY transaction_id DESC;");
-					$sql->execute();
-					$transaction = $sql->fetchAll();
+				if (isset($_GET['betweenDates'])){
+					$fromDate = $_GET['from'];
+					$toDate = $_GET['to'];
 
-					return $transaction;
-				} else if ($transactionProcess == 'online') {
-					$connection = $this->openConnection();
-					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE online = '1' ORDER BY transaction_id DESC;");
-					$sql->execute();
-					$transaction = $sql->fetchAll();
+					if ($transactionProcess == 'instore') {
+						$connection = $this->openConnection();
+						$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE online = '0' AND date BETWEEN '$fromDate' AND '$toDate' ORDER BY transaction_id DESC;");
+						$sql->execute();
+						$transaction = $sql->fetchAll();
+	
+						return $transaction;
+					} else if ($transactionProcess == 'online') {
+						$connection = $this->openConnection();
+						$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE online = '1' AND date BETWEEN '$fromDate' AND '$toDate' ORDER BY transaction_id DESC;");
+						$sql->execute();
+						$transaction = $sql->fetchAll();
+	
+						return $transaction;
+					}
 
-					return $transaction;
+				} else if (isset($_GET['searchTransactions'])) {
+					$searchTag = $_GET['searchTag'];
+
+					if ($transactionProcess == 'instore') {
+						$connection = $this->openConnection();
+						$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE online = '0' AND transaction_id = '$searchTag' ORDER BY transaction_id DESC;");
+						$sql->execute();
+						$transaction = $sql->fetchAll();
+	
+						return $transaction;
+					} else if ($transactionProcess == 'online') {
+						$connection = $this->openConnection();
+						$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE online = '1' AND transaction_id = '$searchTag' ORDER BY transaction_id DESC;");
+						$sql->execute();
+						$transaction = $sql->fetchAll();
+	
+						return $transaction;
+					}
+				} else {
+					if ($transactionProcess == 'instore') {
+						$connection = $this->openConnection();
+						$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE online = '0' ORDER BY transaction_id DESC;");
+						$sql->execute();
+						$transaction = $sql->fetchAll();
+	
+						return $transaction;
+					} else if ($transactionProcess == 'online') {
+						$connection = $this->openConnection();
+						$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE online = '1' ORDER BY transaction_id DESC;");
+						$sql->execute();
+						$transaction = $sql->fetchAll();
+	
+						return $transaction;
+					}
 				}
-
 
 			} else {
 
@@ -1620,15 +1713,33 @@ Class CoopServer{
 	public function getAdminStockInHistory(){
 		if ($_SESSION['authentication']){
 			if ($_SESSION['role'] == 'admin' ) {
-				$connection = $this->openConnection();
-				$sql = $connection->prepare("SELECT *,users.*,products.* FROM stock_in_history 
-											INNER JOIN users ON stock_in_history.cashier_id = users.user_id
-											INNER JOIN products ON stock_in_history.product_id = products.product_id
-											ORDER BY stockin_id DESC;");
-				$sql->execute();
-				$stockInHistory = $sql->fetchAll();
+				if (isset($_GET['betweenDates'])){
+					$fromDate = $_GET['from'];
+					$toDate = $_GET['to'];
 
-				return $stockInHistory;
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT *,users.*,products.* FROM stock_in_history 
+												INNER JOIN users ON stock_in_history.cashier_id = users.user_id
+												INNER JOIN products ON stock_in_history.product_id = products.product_id
+												WHERE date BETWEEN '$fromDate' AND '$toDate'
+												ORDER BY stockin_id DESC;");
+					$sql->execute();
+					$stockInHistory = $sql->fetchAll();
+	
+					return $stockInHistory;
+
+				} else {
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT *,users.*,products.* FROM stock_in_history 
+												INNER JOIN users ON stock_in_history.cashier_id = users.user_id
+												INNER JOIN products ON stock_in_history.product_id = products.product_id
+												ORDER BY stockin_id DESC;");
+					$sql->execute();
+					$stockInHistory = $sql->fetchAll();
+	
+					return $stockInHistory;
+				}
+
 			}
 		} else {
 			header('location:login.php');
@@ -1678,7 +1789,1300 @@ Class CoopServer{
 			header('location:login.php');
 		}
 	}
-	// ====================================== CHART FUNCTIONS ==================================================
+
+	// ====================================== ANALYTICS DAILY ==================================================
+	public function getDate() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['day'];
+					return $date;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getDailySale() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['day'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT date,SUM(amount) AS total FROM transactions WHERE date = '$date' AND state = 'completed';");
+					$sql->execute();
+					$dailySale = $sql->fetch();
+
+					return $dailySale;
+				} else {
+					$date = date("Y-m-d");
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT date,SUM(amount) AS total FROM transactions WHERE date = '$date' AND state = 'completed';");
+					$sql->execute();
+					$dailySale = $sql->fetch();
+
+					return $dailySale;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getDailyChart() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['day'];
+
+					if ($date == date("Y-m-d")) {
+						$connection = $this->openConnection();
+						$sql = $connection->prepare("SELECT SUM(amount) as total,date FROM `transactions` WHERE date >= DATE_ADD('2023-01-05', INTERVAL -6 DAY) AND date <= CURDATE() GROUP BY date ORDER BY date;");
+						$sql->execute();
+						$dailyChartData = $sql->fetchAll();
+					} else {
+						$connection = $this->openConnection();
+						$sql = $connection->prepare("SELECT SUM(amount) as total,date FROM `transactions` WHERE date >= DATE_ADD('$date', INTERVAL -3 DAY) AND date <= DATE_ADD('$date', INTERVAL 3 DAY) GROUP BY date ORDER BY date;");
+						$sql->execute();
+						$dailyChartData = $sql->fetchAll();
+					}
+
+
+					return $dailyChartData;
+				} else {
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(amount) as total,date FROM `transactions` WHERE date >= DATE_ADD('2023-01-05', INTERVAL -6 DAY) AND date <= CURDATE() GROUP BY date ORDER BY date;");
+					$sql->execute();
+					$dailyChartData = $sql->fetchAll();
+
+					return $dailyChartData;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getTotalProducts() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['day'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, transactions.date FROM user_cart_products INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND transactions.date = '$date';");
+					$sql->execute();
+					$dailyTotalProducts = $sql->fetch();
+
+					return $dailyTotalProducts;
+				} else {
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, transactions.date FROM user_cart_products INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND transactions.date = CURDATE();");
+					$sql->execute();
+					$dailyTotalProducts = $sql->fetch();
+
+					return $dailyTotalProducts;
+				}
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getTotalTransactions() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['day'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT * FROM transactions WHERE date='$date' AND state = 'completed';");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+					$transactions = count($transaction);
+				
+					return $transactions;
+					
+				} else {
+					date_default_timezone_set('Asia/Manila');
+					$month = date("m");
+					$year = date('Y');
+					$day = date("d");
+				
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT * FROM transactions WHERE EXTRACT(DAY FROM date) = '$day' AND EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' AND state = 'completed';");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+					$transactions = count($transaction);
+
+					return $transactions;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getDailyTopSelling() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['day'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND transactions.date = '$date' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 5;");
+					$sql->execute();
+					$topSelling = $sql->fetchAll();
+				
+					return $topSelling;
+					
+				} else {				
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND transactions.date = CURDATE() GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 5;");
+					$sql->execute();
+					$topSelling = $sql->fetchAll();
+				
+					return $topSelling;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getDailyTopSellingItem() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['day'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND transactions.date = '$date' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 1;");
+					$sql->execute();
+					$topSelling = $sql->fetch();
+				
+					return $topSelling;
+					
+				} else {				
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND transactions.date = CURDATE() GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 1;");
+					$sql->execute();
+					$topSelling = $sql->fetch();
+				
+					return $topSelling;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getDailySoldItems() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['day'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*, transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions on user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND transactions.date = '$date' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC;");
+					$sql->execute();
+					$soldItem = $sql->fetchAll();
+				
+					return $soldItem;
+					
+				} else {				
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*, transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions on user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND transactions.date = CURDATE() GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC;");
+					$sql->execute();
+					$soldItem = $sql->fetchAll();
+				
+					return $soldItem;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getDailyTransactions() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['day'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE transactions.date = '$date' ORDER BY transaction_id DESC;");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+
+					return $transaction;
+					
+				} else {				
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE transactions.date = CURDATE() ORDER BY transaction_id DESC;");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+
+					return $transaction;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	// ====================================== ANALYTICS MONTHLY ==================================================
+	public function monthEquivalent($month){
+		$months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+		$monthName = $months[$month - 1];
+
+		return $monthName;
+	}
+
+	public function getYearDate() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['monthYear'];
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					return $year;
+				} else {
+					$date = date("Y-m");
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					return $year;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getMonthDate() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['monthYear'];
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					return $month;
+				} else {
+					$date = date("Y-m");
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					return $month;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getMonthlySale() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['monthYear'];
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT CONCAT(EXTRACT(MONTH FROM date),'-',EXTRACT(YEAR FROM date)) AS monthYear,SUM(amount) AS total FROM transactions WHERE EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' AND state = 'completed';");
+					$sql->execute();
+					$monthlySale = $sql->fetch();
+
+					return $monthlySale;
+				} else {
+					$date = date("Y-m");
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT CONCAT(EXTRACT(MONTH FROM date),'-',EXTRACT(YEAR FROM date)) AS monthYear,SUM(amount) AS total FROM transactions WHERE EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' AND state = 'completed';");
+					$sql->execute();
+					$monthlySale = $sql->fetch();
+
+					return $monthlySale;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getMonthlyChartSales($month, $year) {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$m = $month;
+					$y = $year;
+
+					$connection = $this->openConnection();
+					$query = "SELECT date,amount FROM transactions WHERE EXTRACT(MONTH FROM date) = '$m' AND EXTRACT(YEAR FROM date) = '$y' AND state = 'completed';";
+					$sql = $connection->prepare($query);
+					$sql->execute();
+					$sales = $sql->fetchAll();
+			
+					$monthlySales = 0;
+			
+					foreach ($sales as $monthlySale){
+						$monthlySales += $monthlySale['amount'];
+					}
+
+					return $monthlySales;
+				} else {
+					$m = $month;
+					$y = $year;
+
+					$connection = $this->openConnection();
+					$query = "SELECT date,amount FROM transactions WHERE EXTRACT(MONTH FROM date) = '$m' AND EXTRACT(YEAR FROM date) = '$y' AND state = 'completed';";
+					$sql = $connection->prepare($query);
+					$sql->execute();
+					$sales = $sql->fetchAll();
+			
+					$monthlySales = 0;
+			
+					foreach ($sales as $monthlySale){
+						$monthlySales += $monthlySale['amount'];
+					}
+
+					return $monthlySales;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getTotalProductsMonthly() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['day'];
+					$date = $_GET['monthYear'];
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, transactions.date FROM user_cart_products INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year';");
+					$sql->execute();
+					$dailyTotalProducts = $sql->fetch();
+
+					return $dailyTotalProducts;
+				} else {
+					$date = date("Y-m");
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, transactions.date FROM user_cart_products INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year';");
+					$sql->execute();
+					$dailyTotalProducts = $sql->fetch();
+
+					return $dailyTotalProducts;
+				}
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getTotalTransactionsMonthly() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['monthYear'];
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT * FROM transactions WHERE EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' AND state = 'completed';");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+					$transactions = count($transaction);
+				
+					return $transactions;
+					
+				} else {
+					$date = date("Y-m");
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+				
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT * FROM transactions WHERE EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' AND state = 'completed';");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+					$transactions = count($transaction);
+
+					return $transactions;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getMonthlyTopSelling() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['monthYear'];
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 5;");
+					$sql->execute();
+					$topSelling = $sql->fetchAll();
+				
+					return $topSelling;
+					
+				} else {		
+					$date = date("Y-m");
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 5;");
+					$sql->execute();
+					$topSelling = $sql->fetchAll();
+				
+					return $topSelling;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getMonthlyTopSellingItem() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['monthYear'];
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 1;");
+					$sql->execute();
+					$topSelling = $sql->fetch();
+				
+					return $topSelling;
+					
+				} else {
+					$date = date("Y-m");
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 1;");
+					$sql->execute();
+					$topSelling = $sql->fetch();
+				
+					return $topSelling;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getMonthlySoldItems() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['monthYear'];
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*, transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions on user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC;");
+					$sql->execute();
+					$soldItem = $sql->fetchAll();
+				
+					return $soldItem;
+					
+				} else {	
+					$date = date("Y-m");
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*, transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions on user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC;");
+					$sql->execute();
+					$soldItem = $sql->fetchAll();
+				
+					return $soldItem;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getMonthlyTransactions() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$date = $_GET['monthYear'];
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' ORDER BY transaction_id DESC;");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+
+					return $transaction;
+					
+				} else {	
+					$date = date("Y-m");
+					$parts = explode('-', $date);
+					$year = $parts[0]; 
+					$month = $parts[1]; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE EXTRACT(MONTH FROM date) = '$month' AND EXTRACT(YEAR FROM date) = '$year' ORDER BY transaction_id DESC;");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+
+					return $transaction;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	// ====================================== ANALYTICS YEARLY ==================================================
+
+	public function getYearYearlyDate() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$year = $_GET['year'];
+					return $year;
+
+				} else {
+					$year = date("Y");
+					return $year;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getYearlySale() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$year = $_GET['year'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT CONCAT(EXTRACT(MONTH FROM date)) AS year,SUM(amount) AS total FROM transactions WHERE EXTRACT(YEAR FROM date) = '$year' AND state = 'completed';");
+					$sql->execute();
+					$yearlySale = $sql->fetch();
+
+					return $yearlySale;
+				} else {
+					$year = date("Y");
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT CONCAT(EXTRACT(MONTH FROM date)) AS year,SUM(amount) AS total FROM transactions WHERE EXTRACT(YEAR FROM date) = '$year' AND state = 'completed';");
+					$sql->execute();
+					$yearlySale = $sql->fetch();
+
+					return $yearlySale;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getYearlyChartSales() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				$connection = $this->openConnection();
+				$query = "SELECT EXTRACT(YEAR FROM date) AS year, SUM(amount) AS total FROM transactions WHERE state = 'completed' GROUP BY EXTRACT(YEAR FROM date);";
+				$sql = $connection->prepare($query);
+				$sql->execute();
+				$sales = $sql->fetchAll();
+
+				return $sales;
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getTotalProductsYearly() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				if (isset($_GET['pickDate'])){
+					$year = $_GET['year'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, transactions.date FROM user_cart_products INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(YEAR FROM date) = '$year';");
+					$sql->execute();
+					$yearlyTotalProducts = $sql->fetch();
+
+					return $yearlyTotalProducts;
+				} else {
+					$year = date("Y");
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, transactions.date FROM user_cart_products INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(YEAR FROM date) = '$year';");
+					$sql->execute();
+					$yearlyTotalProducts = $sql->fetch();
+
+					return $yearlyTotalProducts;
+				}
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getTotalTransactionsYearly() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$year = $_GET['year'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT * FROM transactions WHERE EXTRACT(YEAR FROM date) = '$year' AND state = 'completed';");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+					$transactions = count($transaction);
+				
+					return $transactions;
+					
+				} else {
+					$year = date("Y");
+				
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT * FROM transactions WHERE EXTRACT(YEAR FROM date) = '$year' AND state = 'completed';");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+					$transactions = count($transaction);
+
+					return $transactions;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getYearlyTopSelling() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+
+				if (isset($_GET['pickDate'])){
+					$year = $_GET['year'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(YEAR FROM date) = '$year' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 5;");
+					$sql->execute();
+					$topSelling = $sql->fetchAll();
+				
+					return $topSelling;
+					
+				} else {		
+					$year = date("Y"); 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(YEAR FROM date) = '$year' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 5;");
+					$sql->execute();
+					$topSelling = $sql->fetchAll();
+				
+					return $topSelling;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getYearlyTopSellingItem() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$year = $_GET['year'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(YEAR FROM date) = '$year' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 1;");
+					$sql->execute();
+					$topSelling = $sql->fetch();
+				
+					return $topSelling;
+					
+				} else {
+					$year = date("Y"); 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(YEAR FROM date) = '$year' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 1;");
+					$sql->execute();
+					$topSelling = $sql->fetch();
+				
+					return $topSelling;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getYearlySoldItems() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$year = $_GET['year'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*, transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions on user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(YEAR FROM date) = '$year' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC;");
+					$sql->execute();
+					$soldItem = $sql->fetchAll();
+				
+					return $soldItem;
+					
+				} else {	
+					$year = date("Y");
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*, transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions on user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND EXTRACT(YEAR FROM date) = '$year' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC;");
+					$sql->execute();
+					$soldItem = $sql->fetchAll();
+				
+					return $soldItem;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getYearlyTransactions() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$year = $_GET['year'];
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE EXTRACT(YEAR FROM date) = '$year' ORDER BY transaction_id DESC;");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+
+					return $transaction;
+					
+				} else {	
+					$year = date("Y");
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE EXTRACT(YEAR FROM date) = '$year' ORDER BY transaction_id DESC;");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+
+					return $transaction;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	// ====================================== ANALYTICS WEEKLY ==================================================
+	public function formatWeek($weekYear) {
+		$year = substr($weekYear, 0, 4);
+		$week = substr($weekYear, 4);
+		
+		$formattedWeek = $year.' Week ' . $week;
+		echo $formattedWeek;
+	}
+
+	public function formatWeek1($weekYear) {
+		$year = substr($weekYear, 0, 4);
+		$week = substr($weekYear, 4);
+		
+		$formattedWeek = $year.'-W'.$week;
+		echo $formattedWeek;
+	}
+
+	public function getWeeklyDate() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$week = $_GET['week'];
+					$parts = explode('-W', $week);
+					$year = $parts[0]; 
+					$weekNumber = $parts[1]; 
+
+					$week = $year.$weekNumber;
+					return $week;
+
+				} else {
+					$weekNumber = date('W');
+					$year = date('Y');
+					$week = $year . $weekNumber;
+
+					return $week;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getWeeklySale() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$week = $_GET['week'];
+					$parts = explode('-W', $week);
+					$year = $parts[0]; 
+					$weekNumber = $parts[1]; 
+
+					$week = $year.$weekNumber; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT YEARWEEK(date) week, SUM(amount) as total FROM transactions WHERE YEARWEEK(DATE, 1) = '$week' AND state = 'completed'");
+					$sql->execute();
+					$monthlySale = $sql->fetch();
+
+					return $monthlySale;
+				} else {
+					$weekNumber = date('W');
+					$year = date('Y');
+					$week = $year . $weekNumber; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT YEARWEEK(date) week, SUM(amount) as total FROM transactions WHERE YEARWEEK(DATE, 1) = '$week' AND state = 'completed'");
+					$sql->execute();
+					$monthlySale = $sql->fetch();
+
+					return $monthlySale;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getWeeklyChartData() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+
+				$connection = $this->openConnection();
+				$sql = $connection->prepare("SELECT YEARWEEK(date) week, SUM(amount) as total FROM transactions WHERE state = 'completed' GROUP BY YEARWEEK(date,1) ORDER BY week DESC LIMIT 10;");
+				$sql->execute();
+				$weeklyChartData = $sql->fetchAll();
+
+				return $weeklyChartData;
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getTotalProductsWeekly() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				if (isset($_GET['pickDate'])){
+					$week = $_GET['week'];
+					$parts = explode('-W', $week);
+					$year = $parts[0]; 
+					$weekNumber = $parts[1]; 
+
+					$week = $year.$weekNumber; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, transactions.date FROM user_cart_products INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND YEARWEEK(DATE, 1) = '$week';");
+					$sql->execute();
+					$weeklyTotalProducts = $sql->fetch();
+
+					return $weeklyTotalProducts;
+				} else {
+					$weekNumber = date('W');
+					$year = date('Y');
+					$week = $year . $weekNumber; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, transactions.date FROM user_cart_products INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND YEARWEEK(DATE, 1) = '$week';");
+					$sql->execute();
+					$weeklyTotalProducts = $sql->fetch();
+
+					return $weeklyTotalProducts;
+				}
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getTotalTransactionsWeekly() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$week = $_GET['week'];
+					$parts = explode('-W', $week);
+					$year = $parts[0]; 
+					$weekNumber = $parts[1]; 
+
+					$week = $year.$weekNumber; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT * FROM transactions WHERE YEARWEEK(DATE,1) = '$week' AND state = 'completed';");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+					$transactions = count($transaction);
+				
+					return $transactions;
+					
+				} else {
+					$weekNumber = date('W');
+					$year = date('Y');
+					$week = $year . $weekNumber; 
+				
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT * FROM transactions WHERE YEARWEEK(DATE,1) = '$week' AND state = 'completed';");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+					$transactions = count($transaction);
+
+					return $transactions;
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getWeeklyTopSelling() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+
+				if (isset($_GET['pickDate'])){
+					$week = $_GET['week'];
+					$parts = explode('-W', $week);
+					$year = $parts[0]; 
+					$weekNumber = $parts[1]; 
+
+					$week = $year.$weekNumber; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND YEARWEEK(DATE,1) = '$week' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 5;");
+					$sql->execute();
+					$topSelling = $sql->fetchAll();
+				
+					return $topSelling;
+					
+				} else {		
+					$weekNumber = date('W');
+					$year = date('Y');
+					$week = $year . $weekNumber;  
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND YEARWEEK(DATE,1) = '$week' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 5;");
+					$sql->execute();
+					$topSelling = $sql->fetchAll();
+				
+					return $topSelling;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getWeeklyTopSellingItem() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$week = $_GET['week'];
+					$parts = explode('-W', $week);
+					$year = $parts[0]; 
+					$weekNumber = $parts[1]; 
+
+					$week = $year.$weekNumber; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND YEARWEEK(DATE,1) = '$week' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 1;");
+					$sql->execute();
+					$topSelling = $sql->fetch();
+				
+					return $topSelling;
+					
+				} else {
+					$weekNumber = date('W');
+					$year = date('Y');
+					$week = $year . $weekNumber;  
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*,transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND YEARWEEK(DATE,1) = '$week' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC LIMIT 1;");
+					$sql->execute();
+					$topSelling = $sql->fetch();
+				
+					return $topSelling;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getWeeklySoldItems() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$week = $_GET['week'];
+					$parts = explode('-W', $week);
+					$year = $parts[0]; 
+					$weekNumber = $parts[1]; 
+
+					$week = $year.$weekNumber; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*, transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions on user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND YEARWEEK(DATE,1) = '$week' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC;");
+					$sql->execute();
+					$soldItem = $sql->fetchAll();
+				
+					return $soldItem;
+					
+				} else {	
+					$weekNumber = date('W');
+					$year = date('Y');
+					$week = $year . $weekNumber;  
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*, transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions on user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND YEARWEEK(DATE,1) = '$week' GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC;");
+					$sql->execute();
+					$soldItem = $sql->fetchAll();
+				
+					return $soldItem;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getWeeklyTransactions() {
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == 'admin') {
+				//session scale to be displayed
+				if (isset($_GET['pickDate'])){
+					$week = $_GET['week'];
+					$parts = explode('-W', $week);
+					$year = $parts[0]; 
+					$weekNumber = $parts[1]; 
+
+					$week = $year.$weekNumber; 
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE YEARWEEK(DATE,1) = '$week' ORDER BY transaction_id DESC;");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+
+					return $transaction;
+					
+				} else {	
+					$weekNumber = date('W');
+					$year = date('Y');
+					$week = $year . $weekNumber;
+
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE YEARWEEK(DATE,1) = '$week' ORDER BY transaction_id DESC;");
+					$sql->execute();
+					$transaction = $sql->fetchAll();
+
+					return $transaction;
+
+				}
+
+			} else {
+
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+	// ====================================== CHART FUNCTIONS OVERALL ==================================================
 	public function getMonthlySalesChart($month){
 		$year = date('Y');
 
@@ -1784,6 +3188,51 @@ Class CoopServer{
 			header ('location:login.php');
 		}
 	}
+
+	// ============================================= ADMIN PROFILE SETTINGS ================================================
+	public function changePassword(){
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == "admin"){
+				unset($_SESSION['message']);
+				if (isset($_POST['save'])){
+					$email = $_POST['email'];
+					$oldPassword = md5($_POST['oldPassword']);
+					$newPassword = $_POST['newPassword'];
+					$newPassword1 = $_POST['newPassword1'];
+
+					$activeUser = $_SESSION['id'];
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT * FROM users WHERE user_id = '$activeUser'");
+					$sql->execute();
+					$userinfo = $sql->fetch();
+
+					if ($newPassword == $newPassword1 ){
+						if (($oldPassword == $userinfo['password']) && ($email == $userinfo['email'])){
+							$newPassword = md5($newPassword1);
+							$connection = $this->openConnection();
+							$sql = $connection->prepare("UPDATE users SET password='$newPassword' WHERE user_id = '$activeUser'");
+							$sql->execute();
+
+							$_SESSION['message'] = "CHANGE PASSWORD SUCCESSFUL!";
+							header('location:adminChangePassword.php');
+						} else {
+							$_SESSION['message'] = "Old Password or Email is incorrect!";
+							header('location:adminChangePassword.php');
+						}
+					} else{
+						$_SESSION['message'] = "Two Passwords Do Not Match!";
+						header('location:adminChangePassword.php');
+					}
+				}
+			}
+		} else {
+			header ('location:login.php');
+		}
+	}
+
+	public function returnMessage(){
+		return $_SESSION['message'];
+	}
 }
 //npx tailwindcss -i ./input.css -o ./output.css --watch
 
@@ -1794,4 +3243,13 @@ Class CoopServer{
 // <script src="assets/js/tailwind.js"></script>
 // <link rel="stylesheet" href="assets/css/font-awesome.min.css">
 // <link rel="stylesheet" href="assets/css/fonts.css">
+//SELECT * FROM transactions WHERE YEARWEEK(`date`, 1) = YEARWEEK('2022-12-27', 1);
+//SELECT * FROM transactions WHERE date >= DATE_SUB(NOW(), INTERVAL 1 WEEK);
+//SELECT * FROM transactions WHERE WEEK(date) = WEEK("2022-12-31"); --- FINAL
+//SELECT * FROM `transactions` WHERE date >= DATE_ADD("2023-01-05", INTERVAL -3 DAY) AND date <= DATE_ADD("2023-01-05", INTERVAL 3 DAY);
+//SELECT SUM(amount) as total,date FROM `transactions` WHERE date >= DATE_ADD("2023-01-05", INTERVAL -3 DAY) AND date <= DATE_ADD("2023-01-05", INTERVAL 3 DAY) GROUP BY date ORDER BY date;
+//SELECT SUM(user_cart_products.quantity_added) AS total_sold, transactions.date FROM user_cart_products INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND transactions.date = CURDATE();
+//SELECT SUM(user_cart_products.quantity_added) AS total_sold, SUM(user_cart_products.total_price) AS total_sale, user_cart_products.product_id, products.*, transactions.date FROM user_cart_products INNER JOIN products ON user_cart_products.product_id = products.product_id INNER JOIN transactions ON user_cart_products.transaction_id = transactions.transaction_id WHERE user_cart_products.transaction_id IS NOT NULL AND transactions.date = CURDATE() GROUP BY user_cart_products.product_id ORDER BY SUM(user_cart_products.quantity_added) DESC;
+// SELECT YEARWEEK(date) week, SUM(amount) as total FROM transactions WHERE YEARWEEK(DATE) = '202306' AND state = 'completed';
+// SELECT YEARWEEK(date) week, SUM(amount) as total FROM transactions WHERE EXTRACT(YEAR from date) = '2023' AND state = 'completed' GROUP BY YEARWEEK(date);
 ?>

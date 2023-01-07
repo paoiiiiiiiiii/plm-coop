@@ -20,73 +20,75 @@ $time = date("h:i:sa");
     </title>
     <!-- <link rel="icon" type="image/png" href="static/images/logo.png"> -->
     <link href="styles.css" rel="stylesheet">
+    <script src="assets/js/tailwind.js"></script>
+    <link rel="stylesheet" href="assets/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/fonts.css"> 
     
 </head>
-<body>
-	<body class="bg-[#9ed5f0]">    	
-        <div class="w-full h-full flex">
-            <div class="w-48">
-                <?php include 'adminSideBar.php'; ?>
-            </div>
+<body class="bg-[#221E3F]">    	
+    <div class="w-full h-full flex">
+        <div class="w-[310px]">
+            <?php include 'adminSideBar.php'; ?>
+        </div>
 
-            <div class="w-full h-auto px-10 py-10 flex flex-col">
-                <div class="justify-center items-center w-full bg-[#eaf8ff] px-5 rounded-bl-lg">
-                    <div class="flex justify-center items-center grid grid-rows-2">
-                        <div class="pt-10 flex justify-center items-center">
-                            <form action="adminAddProducts.php" method="POST" class="flex flex-col" enctype="multipart/form-data">
+        <div class="w-full h-screen px-10 py-5">
+            <div class="bg-[#FCE4BE] rounded-3xl flex flex-col w-full h-full px-10 py-10">
+                <div>
+                    <p class="text-4xl font-extrabold w-full px-3 text-[#221E3F]">Add Products</p>
+                    <div class="w-full flex justify-center">
+                        <div class="w-4/5 mt-5">
+                            <p class="text-2xl font-extrabold w-full text-[#221E3F]">PRODUCT DETAILS</p>
+
+                            <form action="adminAddProducts.php" method="POST" enctype="multipart/form-data" class="w-full mt-5 grid grid-cols-2 gap-5"> 
                                 <div>
-                                    <div>
-                                        <label class=""><b>Product Code: </b></label>
-                                        <input type="text" name="productCode" required>
-                                    <div>
-
-                                    <div>
-                                        <label class=""><b>Product Category: </b></label>
-                                        <select name="productCategory">
+                                    <div class="input-group">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Product Code</label></ul>
+                                        <input type="text" name="productCode" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]">
+                                    </div>
+                                    <div class="input-group mt-3">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Product Category</label></ul>
+                                        <select name="productCategory" class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]">
                                             <?php foreach ($categories as $category): ?>
                                                 <option value="<?= $category['category_id']?>"><?= $category['category_name']; ?></option>
                                             <?php endforeach ?>
                                         </select>
-                                    <div>
-
-                                    <div>
-                                        <label class=""><b>Product Name: </b></label>
-                                        <input type="text" name="productName" required>
-                                    <div>
-
-                                    <div>
-                                        <label class=""><b>Product Description: </b></label>
-                                        <input type="text" name="productDescription" required>
-                                    <div>
-
-                                    <div>
-                                        <label class=""><b>Product Thumbnail: </b></label>
-                                        <input type="file" name="productThumbnail" required>
-                                    <div>
-
-                                    <div>
-                                        <label class=""><b>Price Per Quantity: </b></label>
-                                        <input type="number" step="0.01" min="1" name="productPrice" required>
-                                    <div>
-
-                                    <div>
-                                        <label class=""><b>Stock on Hand </b></label>
-                                        <input type="number" min="0" name="productQuantity" required>
-                                    <div>
-                                    
-                                    <div>
-                                        <button type="submit" name="addProduct">ADD PRODUCT</button>
                                     </div>
-
+                                    <div class="input-group mt-3">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Product Name</label></ul>
+                                        <input type="text" name="productName" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]">
+                                    </div>
+                                    <div class="input-group mt-3">  
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Product Description</label></ul>
+                                        <input type="text" name="productDescription" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]">
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="input-group">  
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Product Thumbnail</label></ul>
+                                        <input type="file" name="productThumbnail" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]">
+                                    </div>
+                                    <div class="input-group mt-3">  
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Price Per Quantity</label></ul>
+                                        <input type="number" step="0.01" min="1" name="productPrice" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]">
+                                    </div>
+                                    <div class="input-group mt-3">  
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Stock On Hand</label></ul>
+                                        <input type="number" min="0" name="productQuantity" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]">
+                                    </div>
+                                </div>
+                                <div class="flex justify-center col-span-2">
+                                    <button class="w-48 h-[40px] text-lg text-white mb-2 rounded-full bg-[#221E3F] px-4 py-1 text-white hover:bg-[#6257b4] mt-3" name="addProduct">
+                                        Add Product
+                                    </button>
                                 </div>
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
-    </body>
+    </div>
 </body>
+
 
 </html>

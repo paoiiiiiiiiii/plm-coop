@@ -2,25 +2,29 @@
 require_once('plmCoopServer.php');
 $coop = new CoopServer();
 $user = $coop->home();
-$monthlySale = $coop->getMonthlySales();
-$averageDailySale = round($monthlySale/23, 2);
-$yearlySale = $coop->getYearlySales();
-$yearlySaleChart = $coop->getYearlySalesChart();
+$totalMonthlySale = $coop->getMonthlySale();
+$topSellingItem = $coop->getMonthlyTopSellingItem();
+$soldItems = $coop->getMonthlySoldItems();
 
-$topSelling = $coop->getTopSelling();
-$topSellingItem = $coop->getTopSellingItem();
-$soldItems = $coop->soldItems();
+//chart data
+$topSelling = $coop->getMonthlyTopSelling();
+
+$totalProductSold = $coop->getTotalProductsMonthly();
+$totalMonthlyTransactions = $coop->getTotalTransactionsMonthly();
+$monthlyTransaction = $coop->getMonthlyTransactions();
 
 date_default_timezone_set('Asia/Manila');
-$date = date("Y-m-d");
-$month = date("m");
-
+$present = date("m-d-Y");
 $dateDay = date("l");
 $time = date("h:i:sa");
 
 $counter = 0;
 $counter1 = 0;
 
+$year = $coop->getYearDate();
+$month = $coop->getMonthDate();
+
+$presentMonthYear = $year."-".$month;
 ?>
 
 <!DOCTYPE html>
@@ -37,44 +41,31 @@ $counter1 = 0;
 
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
+        if ( window.history.replaceState ) {
+            window.history.replaceState( null, null, window.location.href );
+        }
         google.charts.load("current", {packages:['corechart']});
         google.charts.setOnLoadCallback(drawChart);
         const d = new Date();
         let year = d.getFullYear();
 
         function drawChart() {
-            //=============================== monthly sales chart =====================================
+
             var data = google.visualization.arrayToDataTable([
                 ["Month", "Sales", { role: "style" } ],
-                ["January", <?= $coop->getMonthlySalesChart("1"); ?>, "#67b7ff"],
-                ["February",<?= $coop->getMonthlySalesChart("2"); ?>, "#67b7ff"],
-                ["March",<?= $coop->getMonthlySalesChart("3"); ?>, "#67b7ff"],
-                ["April",<?= $coop->getMonthlySalesChart("4"); ?>, "#67b7ff"],
-                ["May",<?= $coop->getMonthlySalesChart("5"); ?>, "#67b7ff"],
-                ["June",<?= $coop->getMonthlySalesChart("6"); ?>, "#67b7ff"],
-                ["July",<?= $coop->getMonthlySalesChart("7"); ?>, "#67b7ff"],
-                ["August",<?= $coop->getMonthlySalesChart("8"); ?>, "#67b7ff"],
-                ["September",<?= $coop->getMonthlySalesChart("9"); ?>, "#67b7ff"],
-                ["October",<?= $coop->getMonthlySalesChart("10"); ?>, "#67b7ff"],
-                ["November",<?= $coop->getMonthlySalesChart("11"); ?>, "#67b7ff"],
-                ["December",<?= $coop->getMonthlySalesChart("12"); ?>, "#67b7ff"],
+                ["Jan", <?= $coop->getMonthlyChartSales("1", $year); ?>, "#67b7ff"],
+                ["Feb",<?= $coop->getMonthlyChartSales("2", $year); ?>, "#67b7ff"],
+                ["Mar",<?= $coop->getMonthlyChartSales("3", $year); ?>, "#67b7ff"],
+                ["Apr",<?= $coop->getMonthlyChartSales("4", $year); ?>, "#67b7ff"],
+                ["May",<?= $coop->getMonthlyChartSales("5", $year); ?>, "#67b7ff"],
+                ["Jun",<?= $coop->getMonthlyChartSales("6", $year); ?>, "#67b7ff"],
+                ["Jul",<?= $coop->getMonthlyChartSales("7", $year); ?>, "#67b7ff"],
+                ["Augt",<?= $coop->getMonthlyChartSales("8", $year); ?>, "#67b7ff"],
+                ["Sept",<?= $coop->getMonthlyChartSales("9", $year); ?>, "#67b7ff"],
+                ["Oct",<?= $coop->getMonthlyChartSales("10", $year); ?>, "#67b7ff"],
+                ["Nov",<?= $coop->getMonthlyChartSales("11", $year); ?>, "#67b7ff"],
+                ["Dec",<?= $coop->getMonthlyChartSales("12", $year); ?>, "#67b7ff"],
             ]);
-
-            // var data = google.visualization.arrayToDataTable([
-            //     ["Month", "Sales", { role: "style" } ],
-            //     ["January", 10231, "#67b7ff"],
-            //     ["February",12001, "#67b7ff"],
-            //     ["March",12321, "#67b7ff"],
-            //     ["April",13531, "#67b7ff"],
-            //     ["May",9812, "#67b7ff"],
-            //     ["June",10203, "#67b7ff"],
-            //     ["July",10289, "#67b7ff"],
-            //     ["August",11201, "#67b7ff"],
-            //     ["September",12312, "#67b7ff"],
-            //     ["October",13201, "#67b7ff"],
-            //     ["November",14201, "#67b7ff"],
-            //     ["December",10281, "#67b7ff"],
-            // ]);
 
             var view = new google.visualization.DataView(data);
             view.setColumns([0, 1,
@@ -85,42 +76,15 @@ $counter1 = 0;
                             2]);
 
             var options = {
-                title: "MONTHLY SALES "+year,
+                title: "MONTHLY SALES <?= $year ?>",
                 width: 600,
                 height: 380,
                 bar: {groupWidth: "95%"},
                 legend: { position: "none" },
                 chartArea:{left:10,top:20,width:"90%",height:"80%"},
             };
-            var chart = new google.visualization.ColumnChart(document.getElementById("monthly_sale"));
+            var chart = new google.visualization.ColumnChart(document.getElementById("daily_sale"));
             chart.draw(view, options);
-
-            //=============================== yearly sales chart =====================================
-            var yearSale = google.visualization.arrayToDataTable([
-                ["Year", "Sales", { role: "style" } ],
-                <?php foreach ($yearlySaleChart as $sale): ?>
-                    ["<?= $sale['year']; ?>", <?= $sale['total']; ?>, "#ffd966"],
-                <?php endforeach ?>
-                
-            ]);
-
-            var viewYear = new google.visualization.DataView(yearSale);
-            viewYear.setColumns([0, 1,
-                            { calc: "stringify",
-                                sourceColumn: 1,
-                                type: "string",
-                                role: "annotation" },
-                            2]);
-
-            var optionsYear = {
-                title: "YEARLY SALES ",
-                width: 800,
-                height: 380,
-                bar: {groupWidth: "95%"},
-                legend: { position: "none" },
-            };
-            var chartYear = new google.visualization.ColumnChart(document.getElementById("yearly_sale"));
-            chartYear.draw(viewYear, optionsYear);
 
             //=============================== top selling chart =====================================
             var topSelling = google.visualization.arrayToDataTable([
@@ -141,6 +105,7 @@ $counter1 = 0;
 
             chart.draw(topSelling, options);
             }
+
     </script>
     
 </head>
@@ -154,27 +119,35 @@ $counter1 = 0;
                 <div class="bg-[#FCE4BE] rounded-3xl flex flex-col w-full h-full px-10 py-10 flex flex-col">
                 <div>
                     <div class="flex">
-                        <p class="text-4xl font-extrabold w-full px-3 text-[#221E3F]">Analytics - OVERALL</p>
+                        <p class="text-4xl font-extrabold w-full px-3 text-[#221E3F]">Analytics - MONTHLY</p>
                         <div class="justify-end mx-1 w-full flex items-center">
-                            <a href="adminAnalytics.php"><p class="text-xs ml-3 text-[#2986CC] font-bold outline outline-offset-1 outline-[#221E3F] rounded-md bg-[#43365E] p-2 text-white">OVERALL</p></a>
+                            <a href="adminAnalytics.php"><p class="text-xs text-[#43365E] font-bold ml-3 outline outline-offset-1 outline-[#221E3F] rounded-md bg-transparent p-2 hover:bg-[#43365E] hover:text-white cursor-pointer">OVERALL</p></a>
                             <a href="adminAnalyticsDaily.php"><p class="text-xs text-[#43365E] font-bold ml-3 outline outline-offset-1 outline-[#221E3F] rounded-md bg-transparent p-2 hover:bg-[#43365E] hover:text-white cursor-pointer">DAILY</p></a>
                             <a href="adminAnalyticsWeekly.php"><p class="text-xs text-[#43365E] font-bold ml-3 outline outline-offset-1 outline-[#221E3F] rounded-md bg-transparent p-2 hover:bg-[#43365E] hover:text-white cursor-pointer">WEEKLY</p></a>
-                            <a href="adminAnalyticsMonthly.php"><p class="text-xs text-[#43365E] font-bold ml-3 outline outline-offset-1 outline-[#221E3F] rounded-md bg-transparent p-2 hover:bg-[#43365E] hover:text-white cursor-pointer">MONTHLY</p></a>
+                            <a href="adminAnalyticsMonthly.php"><p class="text-xs ml-3 text-[#2986CC] font-bold outline outline-offset-1 outline-[#221E3F] rounded-md bg-[#43365E] p-2 text-white">MONTHLY</p></a>
                             <a href="adminAnalyticsYearly.php"><p class="text-xs text-[#43365E] font-bold ml-3 outline outline-offset-1 outline-[#221E3F] rounded-md bg-transparent p-2 hover:bg-[#43365E] hover:text-white cursor-pointer">YEARLY</p></a>
                         </div>
                     </div>
 
+                    <div class="m-auto mt-5">
+                        <form method='get' action='adminAnalyticsMonthly.php'>
+                            <label class="ml-2 text-md text-[#221E3F] font-bold mt-2">Date</label>
+                            <input type="month" name="monthYear" class="ml-2 outline outline-offset-2 outline-[#221E3F] rounded-md" required max="<?= date("Y-m")?>" value="<?= $presentMonthYear ?>"></input>
+                            <button type="submit" name="pickDate" class="ml-1 rounded-lg bg-[#67b0e7] text-white hover:bg-[#2986CC] text-sm h-[30px] px-2" >Pick Date</button>
+                        </form>
+                    </div> 
+                    
                     <div class="bg-white mt-5 rounded-2xl py-5 px-5 drop-shadow-xl">
-                        <p class="text-2xl font-extrabold w-full px-3 text-[#221E3F] mb-10">SALES SUMMARY</p>
+                        <p class="text-2xl font-extrabold w-full px-3 text-[#221E3F] mb-10">SALES SUMMARY  (<?= $coop->monthEquivalent( $month ) ?> <?= $year ?>)</p>
                         <div class="flex">
                             <div class="bg-white flex flex-col w-full">
                                 <div>
                                     <div class="grid grid-cols-3">
 
                                         <div class="flex-1 text-[#221E3F] rounded-md h-[8rem] p-2 grid-cols-3 col-span-3 items-center">
-                                            <div class="col-span-3 text-lg pr-3 pt-1 pl-4">
-                                                <ul class="text-lg font-semibold text-left"><b>Average Daily Sale </b><p class="text-sm">(23 - day basis)</p></ul> 
-                                                <ul class="text-4xl text-center font-bold mt-3">₱ <?= $averageDailySale ?></ul> 
+                                            <div class="col-span-3 text-lg pr-3 pt-1">
+                                                <ul class="text-lg font-semibold text-left pl-4"><b>Total Sale</b></ul> 
+                                                <ul class="text-5xl text-center font-bold mt-3">₱ <?= $totalMonthlySale['total'] ?></ul> 
                                             </div>
                                         </div>
 
@@ -183,9 +156,9 @@ $counter1 = 0;
                                         </div>
 
                                         <div class="flex-1 text-[#221E3F] rounded-md h-[8rem] p-2 grid grid-cols-3 col-span-3">
-                                            <div class="col-span-3 text-lg pr-5 pt-1 pl-4">
-                                                <ul class="text-lg font-semibold text-left"><b>Monthly Sale </b><p class="text-sm">(<?= $coop->monthEquivalent($month)?>)</p></ul> 
-                                                <ul class="text-4xl text-center font-bold mt-3">₱ <?= $monthlySale ?></ul> 
+                                            <div class="col-span-3 text-lg pr-3 pt-1">
+                                                <ul class="text-lg font-semibold text-left pl-4"><b>Total No. of Products Sold</b></ul> 
+                                                <ul class="text-5xl text-center font-bold mt-3"><?= $totalProductSold['total_sold'] ?></ul> 
                                             </div>
                                         </div>
 
@@ -194,28 +167,61 @@ $counter1 = 0;
                                         </div>
                                         
                                         <div class="flex-1 text-[#221E3F] rounded-md h-[8rem] p-2 grid grid-cols-3 col-span-3">
-                                            <div class="col-span-3 text-lg pr-5 pt-1 pl-4">
-                                                <ul class="text-lg font-semibold text-left"><b>Yearly Sale </b><p class="text-sm">(<?= date("Y") ?>)</p></ul> 
-                                                <ul class="text-4xl text-center font-bold mt-3">₱ <?= $yearlySale ?></ul> 
+                                            <div class="col-span-3 text-lg pr-3 pt-1">
+                                                <ul class="text-lg font-semibold text-left pl-4"><b>Transactions Made</b></ul> 
+                                                <ul class="text-5xl text-center font-bold mt-3"><?= $totalMonthlyTransactions ?></ul> 
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div id="monthly_sale" class="w-full ml-3 mt-3"></div>
-                        </div>
-
-                        <div class="flex justify-center items-center text-center mt-10">
-                            <hr class="h-[2px] w-full bg-gray-200 border-0 dark:bg-gray-700">
-                        </div>
-
-                        <div class="flex justify-center items-center mt-10">
-                            <div id="yearly_sale" class="bg-white rounded-lg w-full flex flex justify-center"></div>
+                            <div id="daily_sale" class="w-full ml-3 mt-3"></div>
                         </div>
                     </div>
 
                     <div class="bg-white mt-5 rounded-2xl py-5 px-5 drop-shadow-xl">
-                        <p class="text-2xl font-extrabold w-full px-3 text-[#221E3F]">TOP SELLING ITEMS - OVERALL</p>
+
+                        <p class="text-2xl font-extrabold w-full px-3 text-[#221E3F] mb-5">TRANSACTIONS MADE (<?= $coop->monthEquivalent( $month ) ?> <?= $year ?>)</p>
+
+
+                        <div class="w-full flex h-[36rem] bg-[#FCE4BE] rounded-lg mt-5"> 
+                            <div class="justify-self-start w-full overflow-auto max-h-106 bg-white rounded-lg">
+                                <table class="justify-self-stretch w-full m-auto">
+                                        <thead class="font-semibold text-md bg-[#221E3F] text-white sticky top-0">
+                                            <td class="px-3 py-2 rounded-tl-lg">Trans ID</td>
+                                            <td>Date</td>
+                                            <td>Customer Name</td>
+                                            <td>Amount</td>
+                                            <td>Transaction State</td>
+                                            <td>Transaction Process</td>
+                                            <td>Cashier Name</td>
+                                            <td class="rounded-tr-lg"></td>
+                                        </thead>
+                                <?php foreach($monthlyTransaction as $transactions): ?>
+                                        <tr class="text-md cursor-pointer hover:bg-[#eeeeee]">
+                                            <td class="py-3 px-2"><?= $transactions['transaction_id']; ?></td>
+                                            <td><?= $transactions['date']; ?></td>
+                                            <td><?= $transactions['name']; ?></td>
+                                            <td><?= $transactions['amount']; ?></td>
+                                            <td><?= $transactions['state']; ?></td>
+                                            <?php if($transactions['online'] == '1') { ?>
+                                                <td>Online</td>
+                                            <?php } else { ?>
+                                                <td>In-Store</td>
+                                            <?php } ?>
+                                            <td><?= $transactions['cashier_name']; ?></td>
+                                            <td><a href='adminViewTransaction.php?transactionID=<?=$transactions['transaction_id'];?>'><button class="ml-1 rounded-lg bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-sm">View</button></a></td>
+                                        </tr>
+                                <?php endforeach; ?>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white mt-5 rounded-2xl py-5 px-5 drop-shadow-xl">
+
+                        <p class="text-2xl font-extrabold w-full px-3 text-[#221E3F] mb-10">TOP SELLING  (<?= $coop->monthEquivalent( $month ) ?> <?= $year ?>)</p>
+
                         <div class="flex">
                             <div class="flex items-center justify-center">
                                 <div id="top_selling" class="rounded-lg w-full flex justify-center"></div>
@@ -265,7 +271,7 @@ $counter1 = 0;
 
                         <div class="flex my-5">
                             <div class="bg-white flex flex-col w-full h-[42rem]">
-                                <p class="text-2xl font-extrabold w-full px-3 text-[#221E3F]">TOTAL SALES PER ITEM - OVERALL</p>
+                                <p class="text-2xl font-extrabold w-full px-3 text-[#221E3F]">TOTAL SALES PER ITEM  (<?= $coop->monthEquivalent( $month ) ?> <?= $year ?>)</p>
                                 <div class="w-full py-5 px-5">
                                     <div class="w-full overflow-auto h-[40rem] max-h-full">
                                         <table class="justify-self-stretch w-full drop-shadow-lg">
@@ -301,5 +307,7 @@ $counter1 = 0;
         </div>
     </body>
 </body>
+<script>
 
+</script>
 </html>
