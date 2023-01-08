@@ -24,17 +24,20 @@ $time = date("h:i:sa");
             PLM - COOP
         </title>
         <link href="styles.css" rel="stylesheet">
+        <script src="assets/js/tailwind.js"></script>
+        <link rel="stylesheet" href="assets/css/font-awesome.min.css">
+        <link rel="stylesheet" href="assets/css/fonts.css">
     </head>
     <body class="px-10">    	
         <div>
             <div class="flex">
                 <button onClick="window.print()" class="ml-10 mt-5 rounded-lg bg-[#67b0e7] text-white hover:bg-[#2986CC] p-1 text-sm">Print receipt</button>
-                    <form method="POST" action="staffSettleInStoreTransaction.php">
-                            <button type="submit" class="ml-4 mt-5 rounded-lg bg-[#67b0e7] text-white hover:bg-[#2986CC] p-1 text-sm"
-                                        name="confirmTransac" onclick="return confirm('Confirm Transaction?')">
-                                Confirm Transaction
-                            </button>
-                    </form>
+                <form method="POST" action="staffSettleInStoreTransaction.php">
+                        <button type="submit" class="ml-4 mt-5 rounded-lg bg-[#67b0e7] text-white hover:bg-[#2986CC] p-1 text-sm"
+                                    name="confirmTransac" onclick="return confirm('Confirm Transaction?')">
+                            Confirm Transaction
+                        </button>
+                </form>
             </div>
 
             <div class="items-center mb-4">
@@ -46,11 +49,13 @@ $time = date("h:i:sa");
             </div>
 
             <div class="mx-10 mb-4">
-                <p><b>Date & Time: </b><?= $date; ?>, <?= $dateDay; ?> <?= $time; ?></p>
+                <p><b>Date: </b><?= $transaction['date'] ?></p>
+                <p><b>Cashier Name: </b><?= $transaction['cashier_name']?></p>
             </div>
 
             <div class="mb-5 mx-10">
                 <hr style="border-width: 1px; border-color:black; margin-bottom:20px;">
+                <p class="text-center text-2xl my-5"><b>ORDER DETAILS</b></p>
                 <table class="justify-self-stretch w-full m-auto">
                     <thead class="font-bold text-md">
                         <td class="py-2">Product Code</td>
@@ -75,50 +80,97 @@ $time = date("h:i:sa");
             <div class="mb-5 mx-10 text-left">
                 <table class="w-96">
                     <tr>
-                        <td><p class="flex-auto text-lg"><b>Total Sales</b> </td>
-                        <td><p class="flex-auto text-lg"><?= $total; ?></td>
-                        <td><p class="flex-auto text-lg"><b>Amount Tendered</b> </td>
-                        <td><p class="flex-auto text-lg"><?= $amount_tendered; ?></td>
-                        <td><p class="flex-auto text-lg"><b>Change</b> </td>
-                        <td><p class="flex-auto text-lg"><?= $amount_tendered - $total; ?></td>
+                        <td><p class="flex-auto text-lg"><b>Total Sales: </b> </td>
+                        <td><p class="flex-auto text-lg">₱ <?= $total; ?></td>
+                    </tr>
+                    <tr>
+                        <td><p class="flex-auto text-lg"><b>Amount Tendered: </b> </td>
+                        <td><p class="flex-auto text-lg">₱ <?= $amount_tendered ?></td>
+                    </tr>
+                    <tr>
+                        <td><p class="flex-auto text-lg"><b>Change: </b> </td>
+                        <td><p class="flex-auto text-lg">₱ <?= $amount_tendered - $total ?></td>
                     </tr>
                 <table>
 
-                <p class="text-center text-2xl my-5"><b>ORDER DETAILS</b></p>
+                <p class="text-center text-2xl my-5"><b>TRANSACTION DETAILS</b></p>
                 <table class="w-96">
                     <tr>
-                        <td><p class="flex-auto text-lg"><b>Transaction ID</b> </td>
-                        <td><p class="flex-auto text-lg"><?= $transaction['transaction_id'] ?></td>
+                        <td><p class="flex-auto text-lg"><b>Transaction ID: </b> </td>
+                        <td><p class="flex-auto text-lg text-right"><?= $transaction['transaction_id'] ?></td>
                     </tr>
 
                     <tr>
-                        <td><p class="flex-auto text-lg"><b>Date</b> </td>
-                        <td><p class="flex-auto text-lg"><?= $transaction['date'] ?></td>
+                        <td><p class="flex-auto text-lg"><b>Date: </b> </td>
+                        <td><p class="flex-auto text-lg text-right"><?= $transaction['date'] ?></td>
                     </tr>
+
+                    <tr>
+                        <td><p class="flex-auto text-lg"><b>Process: </b></td>
+                        <td><p class="flex-auto text-lg text-right">In-Store</td>
+                    </tr>
+
                 <table>
                 
-                <p class="text-center text-2xl my-5"><b>OTHER DETAILS</b></p>
-                <table class="w-96">
-                    <tr>
-                        <td><p class="flex-auto text-lg"><b>Name of Receiver</b> </td>
-                        <td><p class="flex-auto text-lg"><?= $transaction['name'] ?></td>
-                    </tr>
+                <?php if ($transaction['process'] == 'delivery') {?>
+                    <p class="text-center text-2xl my-5"><b>SHIPPING DETAILS</b></p>
+                    <table class="w-96">
+                        <tr>
+                            <td><p class="flex-auto text-lg"><b>Name of Receiver: </b> </td>
+                            <td><p class="flex-auto text-lg text-right"><?= $transaction['name'] ?></td>
+                        </tr>
 
-                    <tr>
-                        <td><p class="flex-auto text-lg"><b>Phone Number</b> </td>
-                        <td><p class="flex-auto text-lg"><?= $transaction['phone_number'] ?></td>
-                    </tr>
+                        <tr>
+                            <td><p class="flex-auto text-lg"><b>Phone Number: </b> </td>
+                            <td><p class="flex-auto text-lg text-right"><?= $transaction['phone_number'] ?></td>
+                        </tr>
 
-                    <!-- <tr>
-                        <td><p class="flex-auto text-lg"><b>Email</b></td>
-                        <td><p class="flex-auto text-lg"><?= $transaction['email'] ?></td>
-                    </tr> -->
+                        <tr>
+                            <td><p class="flex-auto text-lg"><b>Email: </b></td>
+                            <td><p class="flex-auto text-lg text-right"><?= $transaction['email'] ?></td>
+                        </tr>
+
+                        <tr>
+                            <td><p class="flex-auto text-lg"><b>Address: </b></td>
+                            <td><p class="flex-auto text-lg text-right"><?= $transaction['address'] ?></td>
+                        </tr>
                     
-                <table>
-                <p class="text-center text-2xl my-5"><b>THANK YOU!</b></p>
+                    <table>
+                <?php } else if ($transaction['process'] == 'walkin') { ?>
+                    <p class="text-center text-2xl my-5"><b>OTHER DETAILS</b></p>
+                    <table class="w-96">
+                        <tr>
+                            <td><p class="flex-auto text-lg"><b>Name of Receiver: </b> </td>
+                            <td><p class="flex-auto text-lg text-right"><?= $transaction['name'] ?></td>
+                        </tr>
+
+                        <tr>
+                            <td><p class="flex-auto text-lg"><b>Phone Number: </b> </td>
+                            <td><p class="flex-auto text-lg text-right"><?= $transaction['phone_number'] ?></td>
+                        </tr>
+
+                        <tr>
+                            <td><p class="flex-auto text-lg"><b>Email: </b></td>
+                            <td><p class="flex-auto text-lg text-right"><?= $transaction['email'] ?></td>
+                        </tr>
+                    <table>
+                <?php } else { ?>
+                    <table class="w-96">
+                        <tr>
+                            <td><p class="flex-auto text-lg"><b>Customer Name: </b> </td>
+                            <td><p class="flex-auto text-lg text-right"><?= $transaction['name'] ?></td>
+                        </tr>
+
+                        <tr>
+                            <td><p class="flex-auto text-lg"><b>Phone Number: </b> </td>
+                            <td><p class="flex-auto text-lg text-right"><?= $transaction['phone_number'] ?></td>
+                        </tr>
+                    <table>
+                <?php } ?>
             </div>
 
         </div>
     </body>
  
 </html>
+

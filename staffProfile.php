@@ -19,78 +19,92 @@ $time = date("h:i:sa");
             PLM COOP
     </title>
     <!-- <link rel="icon" type="image/png" href="static/images/logo.png"> -->
-    <link href="styles.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">   
+    <script src="assets/js/tailwind.js"></script>
+    <link rel="stylesheet" href="assets/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/fonts.css"> 
     
 </head>
-<body>
-	<body class="bg-[#f0faff]">    	
-        <div class="w-100% h-100% items-center bg-[#f0faff]">
-            <div class="rounded-md py-5 px-20 pb-5 drop-shadow-md">
-                <?php include 'staffTopBar.php'; ?>
 
-                <div class="w-full flex h-auto mt-8 justify-center items-center">
-                    <div class="justify-self-start w-full bg-[#eaf8ff] px-5 rounded-bl-lg pt-10">
-                        <h1 class="text-center text-5xl font-bold uppercase">ACCOUNT DETAILS</h1>
+<body class="bg-[#221E3F]">    	
+    <div class="w-full h-full flex">
+        <div class="w-[310px]">
+            <?php include 'staffTopBar.php'; ?>
+        </div>
 
-                        <div class="w-full bg-[#eaf8ff] px-5 rounded-bl-lg">
-                            <form method="POST" action="staffProfile.php" class="grid grid-cols-2">
+        <div class="w-full h-screen px-10 py-5">
+            <div class="bg-[#FCE4BE] rounded-3xl flex flex-col w-full h-full px-10 py-10">
+                <div>
+                    <div class="grid grid-cols-2">
+                        <p class="text-4xl font-extrabold w-full px-3 text-[#221E3F]">PROFILE OVERVIEW</p>
+                        <div class="flex justify-end">
+                            <a href="staffChangePassword.php" class="col-span-1 text-right"><button class="flex w-48 h-[40px] text-md text-white rounded-full bg-[#221E3F] px-4 text-white hover:bg-[#6257b4]"><p class="ml-3 mt-2">Change Password</p></button></a>
+                        </div>
+                    </div>
+                    <div class="w-full flex justify-center">
+                        <div class="w-4/5 mt-5">
+                            <p class="text-2xl font-extrabold w-full text-[#221E3F]">ACCOUNT DETAILS</p>
+
+                            <form method="post" action="staffProfile.php" class="w-full mt-5 grid grid-cols-2 gap-6"> 
                                 <div>
-                                    
-                                    <div>
-                                        <label class="text-center text-[#a8a8a8] text-sm">First Name: </label>
-                                        <input type="text" name="fname" required class="bg-[#efefef] text-sm text-[#525252] w-full mb-2 p-1 rounded-lg" value="<?= $user['fname']; ?>">
+                                    <div class="input-group">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">User ID</label></ul>
+                                        <input type="text" name="userID" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $user['user_id'] ?>" disabled>
+                                    </div>
+                                    <div class="input-group">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Email</label></ul>
+                                        <input type="email" name="email" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $user['email'] ?>">
+                                    </div>
+                                    <div class="input-group">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">First Name</label></ul>
+                                        <input type="text" name="fname" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $user['fname'] ?>">
+                                    </div>
+                                    <div class="input-group">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Last Name</label></ul>
+                                        <input type="text" name="lname" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $user['lname'] ?>">
+                                    </div>
+                                    <div class="input-group">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Personal number</label></ul>
+                                        <input type="number" name="phoneNum" required minlength="11" maxlength="11" class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $user['phone_number'] ?>">
                                     </div>
 
-                                    <div>
-                                        <label class="text-center text-[#a8a8a8] text-sm">Last Name: </label>
-                                        <input type="text" name="lname" required class="bg-[#efefef] text-sm text-[#525252] w-full mb-2 p-1 rounded-lg" value="<?= $user['lname']; ?>">
-                                    </div>
-
-                                    <div>
-                                        <label class="text-center text-[#a8a8a8] text-sm">Email: </label>
-                                        <input type="text" name="email" required class="bg-[#efefef] text-sm text-[#525252] w-full mb-2 p-1 rounded-lg" value="<?= $user['email']; ?>">
-                                    </div>
-
-                                    <div>
-                                        <label class="text-center text-[#a8a8a8] text-sm">Phone Number: </label>
-                                        <input type="text" name="phoneNum" required class="bg-[#efefef] text-sm text-[#525252] w-full mb-2 p-1 rounded-lg" value="<?= $user['phone_number'] ?>">
-                                    </div>
-                                </div>                                
+                                </div>
 
                                 <div>
-                                    <div>
-                                        <label class="text-center text-[#a8a8a8] text-sm">House No. & Subdivision: </label>
-                                        <input type="text" name="houseNo" required class="bg-[#efefef] text-sm text-[#525252] w-full mb-2 p-1 rounded-lg" value="<?= $userProfile['house_no'] ?>">
+                                    <div class="input-group">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Phone number/Telephone</label></ul>
+                                        <input type="number" name="telNum" required minlength="11" maxlength="11" class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $userProfile['phone_number'] ?>">
                                     </div>
+                                    <div class="input-group">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">House No. & Subdivision</label></ul>
+                                        <input type="text" name="houseNo" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $userProfile['house_no'] ?>">
+                                    </div>
+                                    <div class="input-group">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Baranggay</label></ul>
+                                        <input type="text" name="baranggay" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $userProfile['baranggay'] ?>">
+                                    </div>
+                                    <div class="input-group">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">City</label></ul>
+                                        <input type="text" name="city" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $userProfile['city'] ?>">
+                                    </div>
+                                    <div class="input-group">
+                                        <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Region</label></ul>
+                                        <input type="text" name="region" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $userProfile['region'] ?>">
+                                    </div>
+                                </div>
 
-                                    <div>
-                                        <label class="text-center text-[#a8a8a8] text-sm">Baranggay: </label>
-                                        <input type="text" name="baranggay" required class="bg-[#efefef] text-sm text-[#525252] w-full mb-2 p-1 rounded-lg" value="<?= $userProfile['baranggay'] ?>">
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="text-center text-[#a8a8a8] text-sm">City: </label>
-                                        <input type="text" name="city" required class="bg-[#efefef] text-sm text-[#525252] w-full mb-2 p-1 rounded-lg" value="<?= $userProfile['city'] ?>">
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="text-center text-[#a8a8a8] text-sm">Region: </label>
-                                        <input type="text" name="region" required class="bg-[#efefef] text-sm text-[#525252] w-full mb-2 p-1 rounded-lg" value="<?= $userProfile['region'] ?>">
-                                    </div>                                
-                                    <button type="submit" class="w-64 rounded-full text-md text-white bg-[#5094c8] rounded-md hover:bg-[#eaf8ff] hover:text-[#2986CC] mt-2 p-2" name="updateProfile">
-                                        Update Profile
+                                <div class="flex justify-center col-span-2">
+                                    <button class="w-2/5 h-[40px] text-lg text-white mb-2 rounded-full bg-[#221E3F] px-4 py-1 text-white hover:bg-[#6257b4] mt-3" name="updateProfile">
+                                        Update
                                     </button>
-                                </div>                                
+                                </div>
                             </form>
                         </div>
                     </div>
                 </div>
-                
             </div>
-            <!-- <p class="pb-2 bg-[#9ed5f0] pl-20 text-white text-lg"><b>Date: </b><?= $date ?> <?= $dateDay ?></p>
-            <button class="ml-20 text-sm text-white mb-6 rounded-lg bg-[#67b0e7] p-2 text-white hover:bg-[#2986CC]"><a href="login.php?logout='1'" onclick="return confirm('Are you sure you want to logout?')"><img src="static/icons/logout.png" width="18" height="18"></a></button> -->
         </div>
-    </body>
+    </div>
 </body>
 
 </html>

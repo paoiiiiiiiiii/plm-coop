@@ -18,21 +18,28 @@ $time = date("h:i:sa");
             PLM COOP
     </title>
     <!-- <link rel="icon" type="image/png" href="static/images/logo.png"> -->
-    <link href="styles.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">   
+    <script src="assets/js/tailwind.js"></script>
+    <link rel="stylesheet" href="assets/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/fonts.css"> 
     
 </head>
-<body>
-	<body class="bg-[#f0faff]">    	
-        <div class="w-100% h-100% items-center bg-[#f0faff]">
-            <div class="rounded-md py-5 px-20 pb-5 drop-shadow-md">
-                <?php include 'staffTopBar.php'; ?>
 
-                <div class="w-100% flex h-auto mt-8">
-                    <div class="justify-self-start w-full bg-[#eaf8ff] px-5 rounded-bl-lg pt-10">
-                        <p class="text-center text-2xl">YOUR STOCK IN HISTORY</p>
-                        <div>
+<body class="bg-[#221E3F]">    	
+    <div class="w-full h-full flex">
+        <div class="w-[310px]">
+            <?php include 'staffTopBar.php'; ?>
+        </div>
+
+        <div class="w-full h-screen px-10 py-5">
+            <div class="bg-[#FCE4BE] rounded-3xl flex flex-col w-full h-full px-10 py-10">
+                <div>
+                    <p class="text-4xl font-extrabold w-full px-3 text-[#221E3F]">YOUR STOCK IN HISTORY</p>
+
+                    <div class="w-full flex h-[36rem] bg-[#ffd695] rounded-b-lg mt-10">
+                        <div class="justify-self-start w-full overflow-auto max-h-106"> 
                             <table class="justify-self-stretch w-full m-auto">
-                                    <thead class="font-bold text-md sticky top-0">
+                                    <thead class="font-semibold text-md bg-[#221E3F] text-white sticky top-0">
                                         <td class="pl-2 rounded-tl-md py-2">#</td>
                                         <td></td>
                                         <td class="py-2">Staff Name</td>
@@ -42,31 +49,30 @@ $time = date("h:i:sa");
                                         <td class="rounded-tr-md">Stock In Quantity</td>
                                     </thead>
                             <?php if ($stock) { $counter=0;?>
-                                    <?php foreach($stock as $stockIn): $counter += 1;?>
-                                        <tr>
-                                            <td><?= $counter; ?></td>
-                                            <td><img src="thumbnails/<?= $stockIn['thumbnail']; ?>" width='50' height='50'></td>
-                                            <td><p><?= $stockIn['fname']." ".$stockIn['lname']; ?></p></td>
-                                            <td><p><?= $stockIn['date']; ?></p></td>
-                                            <td><p><?= $stockIn['product_id']; ?></p></td>
-                                            <td><p><?= $stockIn['product_name']; ?></p></td>
-                                            <td><p><?= $stockIn['added_quantity']; ?></p></td>
-                                        </tr>
-                                    <?php endforeach; ?>
+                                <?php foreach($stock as $stockIn): $counter += 1;?>
+                                <tr class="cursor-pointer hover:bg-[#e8d2ae]">
+                                    <td class="px-2"><?= $counter; ?></td>
+                                    <td class="py-2"><img src="thumbnails/<?= $stockIn['thumbnail']; ?>" width='50' height='50'></td>
+                                    <td><p><?= $stockIn['fname']." ".$stockIn['lname']; ?></p></td>
+                                    <td><p><?= $stockIn['date']; ?></p></td>
+                                    <td><p><?= $stockIn['product_id']; ?></p></td>
+                                    <td><p><?= $stockIn['product_name']; ?></p></td>
+                                    <td><p><?= $stockIn['added_quantity']; ?></p></td>
+
+                                </tr>
+                                <?php endforeach; ?>
                             <?php } ?>
                             </table>
                             <?php if(!$stock) {?>
-                                    <p>THERE ARE NO STOCK IN HISTORY!</p>
+                                <div class="flex items-center justify-center h-[30rem] w-full">
+                                    <p class="text-center">NO STOCK IN TRANSACTIONS!</p>
+                                <div>
                             <?php } ?>
                         </div>
                     </div>
                 </div>
-                
             </div>
-            <!-- <p class="pb-2 bg-[#9ed5f0] pl-20 text-white text-lg"><b>Date: </b><?= $date ?> <?= $dateDay ?></p>
-            <button class="ml-20 text-sm text-white mb-6 rounded-lg bg-[#67b0e7] p-2 text-white hover:bg-[#2986CC]"><a href="login.php?logout='1'" onclick="return confirm('Are you sure you want to logout?')"><img src="static/icons/logout.png" width="18" height="18"></a></button> -->
         </div>
-    </body>
+    </div>
 </body>
-
 </html>

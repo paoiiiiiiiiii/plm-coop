@@ -281,7 +281,7 @@ Class CoopServer{
 		if ($_SESSION['authentication']) {
 			$productID = $_GET['productID'];
 			$connection = $this->openConnection();
-			$sql = $connection->prepare("SELECT *, category.category_name FROM products INNER JOIN category ON products.product_category_id = category.category_id WHERE products.product_id = '$productID';");
+			$sql = $connection->prepare("SELECT *,products.thumbnail as pthumbnail, category.category_name FROM products INNER JOIN category ON products.product_category_id = category.category_id WHERE products.product_id = '$productID';");
 			$sql->execute();
 			$product = $sql->fetch();
 			return $product;
@@ -809,7 +809,7 @@ Class CoopServer{
 					
 					if ($processType == 'online') {
 						$connection = $this->openConnection();
-						$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE cashier_id = '$activeUser' AND online = '1' ORDER BY transaction_id DESC;");
+						$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE cashier_id = '$activeUser' AND online = '1' AND state IS NOT NULL ORDER BY transaction_id DESC;");
 						$sql->execute();
 						$transaction = $sql->fetchAll();
 						$_SESSION['transaction_process'] = 'online';
@@ -817,7 +817,7 @@ Class CoopServer{
 						return $transaction;
 					} else if ($processType == 'instore') {
 						$connection = $this->openConnection();
-						$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE cashier_id = '$activeUser' AND online = '0' ORDER BY transaction_id DESC;");
+						$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE cashier_id = '$activeUser' AND online = '0' AND state IS NOT NULL ORDER BY transaction_id DESC;");
 						$sql->execute();
 						$transaction = $sql->fetchAll();
 						$_SESSION['transaction_process'] = 'instore';
@@ -825,7 +825,7 @@ Class CoopServer{
 						return $transaction;
 					} else {
 						$connection = $this->openConnection();
-						$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE cashier_id = '$activeUser' ORDER BY transaction_id DESC;");
+						$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname) AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE cashier_id = '$activeUser' AND state IS NOT NULL ORDER BY transaction_id DESC;");
 						$sql->execute();
 						$transaction = $sql->fetchAll();
 						$_SESSION['transaction_process'] = 'all';
@@ -834,7 +834,7 @@ Class CoopServer{
 					}
 				} else {
 					$connection = $this->openConnection();
-					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname)AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE cashier_id = '$activeUser' ORDER BY transaction_id DESC;");
+					$sql = $connection->prepare("SELECT *,CONCAT(users.fname,' ',users.lname)AS cashier_name FROM transactions INNER JOIN users ON transactions.cashier_id = users.user_id WHERE cashier_id = '$activeUser' AND state IS NOT NULL ORDER BY transaction_id DESC;");
 					$sql->execute();
 					$transaction = $sql->fetchAll();
 					$_SESSION['transaction_process'] = 'all';
@@ -3222,6 +3222,46 @@ Class CoopServer{
 					} else{
 						$_SESSION['message'] = "Two Passwords Do Not Match!";
 						header('location:adminChangePassword.php');
+					}
+				}
+			}
+		} else {
+			header ('location:login.php');
+		}
+	}
+
+	public function changePasswordStaff(){
+		if ($_SESSION['authentication']) {
+			if ($_SESSION['role'] == "staff"){
+				unset($_SESSION['message']);
+				if (isset($_POST['save'])){
+					$email = $_POST['email'];
+					$oldPassword = md5($_POST['oldPassword']);
+					$newPassword = $_POST['newPassword'];
+					$newPassword1 = $_POST['newPassword1'];
+
+					$activeUser = $_SESSION['id'];
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("SELECT * FROM users WHERE user_id = '$activeUser'");
+					$sql->execute();
+					$userinfo = $sql->fetch();
+
+					if ($newPassword == $newPassword1 ){
+						if (($oldPassword == $userinfo['password']) && ($email == $userinfo['email'])){
+							$newPassword = md5($newPassword1);
+							$connection = $this->openConnection();
+							$sql = $connection->prepare("UPDATE users SET password='$newPassword' WHERE user_id = '$activeUser'");
+							$sql->execute();
+
+							$_SESSION['message'] = "CHANGE PASSWORD SUCCESSFUL!";
+							header('location:staffChangePassword.php');
+						} else {
+							$_SESSION['message'] = "Old Password or Email is incorrect!";
+							header('location:staffChangePassword.php');
+						}
+					} else{
+						$_SESSION['message'] = "Two Passwords Do Not Match!";
+						header('location:staffChangePassword.php');
 					}
 				}
 			}

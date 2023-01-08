@@ -10,7 +10,6 @@ $dateDay = date("l");
 $time = date("h:i:sa");
 
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,61 +18,78 @@ $time = date("h:i:sa");
     </title>
     <!-- <link rel="icon" type="image/png" href="static/images/logo.png"> -->
     <link href="styles.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">   
+    <script src="assets/js/tailwind.js"></script>
+    <link rel="stylesheet" href="assets/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/fonts.css"> 
     
 </head>
-<body>
-	<body class="bg-[#f0faff]">    	
-        <div class="w-100% h-100% items-center bg-[#f0faff]">
-            <div class="rounded-md py-5 px-20 pb-5 drop-shadow-md">
-                <?php include 'staffTopBar.php'; ?>
 
-                <div class="w-100% flex h-auto mt-8">
-                    <div class="justify-self-start w-full bg-[#eaf8ff] px-5 rounded-bl-lg pt-10">
-                        <div class="w-full grid grid-cols-4">
-                        <a href="staffOnlineTransaction.php"><p>PENDING</p></a>
-                            <a href="staffProcessingTransaction.php"><p>PROCESSING</p></a>
-                            <a href="staffCancelledTransaction.php"><p>CANCELLED</p></a>
-                            <a href="staffCompletedTransaction.php"><p>COMPLETED</p></a>
+<body class="bg-[#221E3F]">    	
+    <div class="w-full h-full flex">
+        <div class="w-[310px]">
+            <?php include 'staffTopBar.php'; ?>
+        </div>
+
+        <div class="w-full h-screen px-10 py-5">
+            <div class="bg-[#FCE4BE] rounded-3xl flex flex-col w-full h-full px-10 py-10">
+                <div class="h-full">
+                    <div class="grid grid-cols-2">
+                        <p class="text-4xl font-extrabold w-full px-3 text-[#221E3F] pb-4">ONLINE TRANSACTION</p>
+                        <div class="justify-end pr-2 w-full flex items-center">
+                            <a href="staffOnlineTransaction.php"><p class="text-xs text-[#43365E] font-bold ml-3 outline outline-offset-1 outline-[#221E3F] rounded-md bg-transparent p-2 hover:bg-[#43365E] hover:text-white cursor-pointer">PENDING</p></a>
+                            <a href="staffProcessingTransaction.php"><p class="text-xs ml-3 text-[#2986CC] font-bold outline outline-offset-1 outline-[#221E3F] rounded-md bg-[#43365E] p-2 text-white">PROCESSING</p></a>
+                            <a href="staffCancelledTransaction.php"><p class="text-xs text-[#43365E] font-bold ml-3 outline outline-offset-1 outline-[#221E3F] rounded-md bg-transparent p-2 hover:bg-[#43365E] hover:text-white cursor-pointer">CANCELLED</p></a>
+                            <a href="staffCompletedTransaction.php"><p class="text-xs text-[#43365E] font-bold ml-3 outline outline-offset-1 outline-[#221E3F] rounded-md bg-transparent p-2 hover:bg-[#43365E] hover:text-white cursor-pointer">COMPLETED</p></a>
+                            
                         </div>
-                        <div>
-                            <table class="justify-self-stretch w-full m-auto">
-                                    <thead class="font-bold text-md sticky top-0">
-                                        <td class="pl-2 rounded-tl-md py-2">Transaction ID</td>
-                                        <td class="py-2">Date</td>
-                                        <td class="py-2">Account</td>
-                                        <td class="py-2">Receiver Name</td>
-                                        <td class="py-2">Process</td>
-                                        <td class="py-2">State</td>
-                                        <td class="py-2">Total Price</td>
-                                        <td class="rounded-tr-md"></td>
-                                    </thead>
-                            <?php if ($processing) { ?>
-                                    <?php foreach($processing as $processingOrders): ?>
-                                        <tr>
-                                            <td><p><?= $processingOrders['transaction_id']; ?></p></td>
-                                            <td><p><?= $processingOrders['date']; ?></p></td>
-                                            <td><p><?= $processingOrders['fname']." ".$processingOrders['lname']; ?></p></td>
-                                            <td><p><?= $processingOrders['name']; ?></p></td>
-                                            <td><p><?= $processingOrders['process']; ?></p></td>
-                                            <td><p><?= $processingOrders['state']; ?></p></td>
-                                            <td><p><?= $processingOrders['amount']; ?></p></td>
-                                            <td><a href="staffViewOrder.php?transactionID=<?= $processingOrders['transaction_id']?>">View</a></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                            <?php } ?>
-                            </table>
-                            <?php if(!$processing) {?>
-                                    <p>THERE ARE NO ON PROCESSING ORDERS!</p>
-                            <?php } ?>
+                    </div>
+                    <div class="w-full h-full flex">
+                        <div class="w-full flex h-[40rem] rounded-lg">
+                            <div class="justify-self-start w-full bg-[#ffd695] rounded-b-lg rounded-t-lg">
+                                <div class="overflow-auto h-[32rem] max-h-106">
+                                    <table class="justify-self-stretch w-full m-auto">
+                                        <thead class="font-bold text-md bg-[#221E3F] text-white sticky top-0">
+                                            <td class="pl-2 rounded-tl-lg py-2">Transaction ID</td>
+                                            <td class="py-2">Date</td>
+                                            <td class="py-2">Account</td>
+                                            <td class="py-2">Receiver Name</td>
+                                            <td class="py-2">Process</td>
+                                            <td class="py-2">State</td>
+                                            <td class="py-2">Total Price</td>
+                                            <td class="rounded-tr-lg w-[10px]"></td>
+                                        </thead>
+                                        <?php if ($processing) { ?>
+                                            <?php foreach($processing as $processingOrders): ?>
+                                                <tr class="cursor-pointer hover:bg-[#e8d2ae]">
+                                                    <td class="py-2 px-3"><p><?= $processingOrders['transaction_id']; ?></p></td>
+                                                    <td><p><?= $processingOrders['date']; ?></p></td>
+                                                    <td><p><?= $processingOrders['fname']." ".$processingOrders['lname']; ?></p></td>
+                                                    <td><p><?= $processingOrders['name']; ?></p></td>
+                                                    <td><p><?= $processingOrders['process']; ?></p></td>
+                                                    <td><p><?= $processingOrders['state']; ?></p></td>
+                                                    <td><p><?= $processingOrders['amount']; ?></p></td>
+                                                    <td class="py-2 px-3"><a href="staffViewOrder.php?transactionID=<?= $processingOrders['transaction_id']?>"><button class="ml-1 rounded-lg bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-sm">View</button></a></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                    <?php } ?>
+                                    </table>
+                                    <?php if(!$processing) {?>
+                                            <div class="mt-[15rem] text-lg text-[#221E3F] text-center">
+                                                <p>THERE ARE NO ON PROCESS ORDERS!</p>
+                                            </div>
+                                    <?php } ?>
+                                </div>
+
+
+                            </div>
+
                         </div>
                     </div>
                 </div>
-                
             </div>
-            <!-- <p class="pb-2 bg-[#9ed5f0] pl-20 text-white text-lg"><b>Date: </b><?= $date ?> <?= $dateDay ?></p>
-            <button class="ml-20 text-sm text-white mb-6 rounded-lg bg-[#67b0e7] p-2 text-white hover:bg-[#2986CC]"><a href="login.php?logout='1'" onclick="return confirm('Are you sure you want to logout?')"><img src="static/icons/logout.png" width="18" height="18"></a></button> -->
         </div>
-    </body>
+    </div>
 </body>
 
 </html>

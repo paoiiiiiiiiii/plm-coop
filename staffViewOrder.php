@@ -23,88 +23,100 @@ $time = date("h:i:sa");
     <link href="styles.css" rel="stylesheet">
     
 </head>
-<body>
-	<body class="bg-[#f0faff]">    	
-        <div class="w-100% h-100% items-center bg-[#f0faff]">
-            <div class="rounded-md py-5 px-20 pb-5 drop-shadow-md">
-                <?php include 'staffTopBar.php'; ?>
-                
-                <div class="w-full flex h-auto mt-8">
-                    <div class="w-full bg-[#eaf8ff] px-5 rounded-bl-lg">
-                        <form method="POST" action="staffViewOrder.php">
-                            <table class="justify-self-stretch w-full m-auto">
-                                    <thead class="font-bold text-md sticky top-0">
-                                        <td class="pl-2 rounded-tl-md py-2"></td>
-                                        <td class="py-2">Product</td>
-                                        <td class="py-2">Product Code</td>
-                                        <td class="py-2">Product Name</td>
-                                        <td class="py-2">Quantity</td>
-                                        <td class="py-2">Total Price</td>
-                                    </thead>
-                            <?php if($cart){ $counter;?>
-                                    <?php foreach($cart as $productsInCart): $counter += 1;?>
-                                        <tr>
-                                            <td><?= $counter; ?></td>
-                                            <td><img src="thumbnails/<?= $productsInCart['thumbnail']?>" width="100" height="100"></td>
-                                            <td><p><?= $productsInCart['product_code']; ?></p></td>
-                                            <td><p><?= $productsInCart['product_name']; ?></p></td>
-                                            <td><p><?= $productsInCart['quantity_added']; ?></p></td>
-                                            <td><p><?= $productsInCart['total_price']; ?></p></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                            <?php }?>
-                            </table>
-                            <?php if(!$cart) {?>
-                                    <p>THERE ARE NO PRODUCTS IN THE CART!</p>
-                            <?php } ?>
 
-                            <p>Total Price: <?= $transaction['amount']?></p>
+<body class="bg-[#221E3F]">    	
+    <div class="w-full h-full flex">
+        <div class="w-[310px]">
+            <?php include 'staffTopBar.php'; ?>
+        </div>
 
-                            <p class="text-center text-3xl">ORDER DETAILS:</p>
-                            <p>Transaction ID: <?= $transaction['transaction_id']?></p>
-                            <p>Transaction Date: <?= $transaction['date']?></p>
-                            <p>Account: <?= $transaction['fname']." ".$transaction['lname']; ?></p>
-                            <p>Receiver Name: <?= $transaction['name']; ?></p>
-                            <p>Email: <?= $transaction['email']; ?></p>
-                            <p>Phone Number: <?= $transaction['phone_number']; ?></p>
-                            <p>Process: <?= $transaction['process']; ?></p>
+        <div class="w-full h-screen px-10 py-5">
+            <div class="bg-[#FCE4BE] rounded-3xl flex flex-col w-full h-auto px-10 py-10">
+                <div class="h-auto">
+                    <div class="grid grid-cols-2">
+                        <p class="text-4xl font-extrabold w-full px-3 text-[#221E3F] pb-4">VIEW ORDER</p>
+                    </div>
+                    <div class="w-full h-auto flex">
+                        <div class="w-full flex h-auto rounded-lg">
+                            <div class="justify-self-start w-full bg-[#ffd695] rounded-b-lg rounded-t-lg">
+                                <div class="h-auto">
+                                    <form method="POST" action="staffViewOrder.php">
+                                        <table class="justify-self-stretch w-full m-auto">
+                                                <thead class="font-bold text-md bg-[#221E3F] text-white">
+                                                    <td class="pl-2 rounded-tl-md py-2"></td>
+                                                    <td class="py-2">Product</td>
+                                                    <td class="py-2">Product Code</td>
+                                                    <td class="py-2">Product Name</td>
+                                                    <td class="py-2">Quantity</td>
+                                                    <td class="py-2">Total Price</td>
+                                                </thead>
+                                        <?php if($cart){ $counter;?>
+                                                <?php foreach($cart as $productsInCart): $counter += 1;?>
+                                                    <tr>
+                                                        <td class="px-3"><?= $counter; ?></td>
+                                                        <td class="py-2 px-3"><img src="thumbnails/<?= $productsInCart['thumbnail']?>" width="100" height="100"></td>
+                                                        <td><p><?= $productsInCart['product_code']; ?></p></td>
+                                                        <td><p><?= $productsInCart['product_name']; ?></p></td>
+                                                        <td><p><?= $productsInCart['quantity_added']; ?></p></td>
+                                                        <td><p><?= $productsInCart['total_price']; ?></p></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                        <?php }?>
+                                        </table>
+                                        <?php if(!$cart) {?>
+                                                <p>THERE ARE NO PRODUCTS IN THE CART!</p>
+                                        <?php } ?>
 
-                            <?php if ($transaction['process'] == 'delivery' ) { ?>
-                                <p class="text-center text-3xl">DELIVERY DETAILS:</p>
-                                <p>Address: <?= $transaction['address']; ?></p>
-                            <?php } ?>
+                                        <div class="px-8 py-8 text-lg">
+                                            <p><b>Total Price: </b><?= $transaction['amount']?></p>
 
-                            <select name="state" id="state" >
-                                <?php if ($transaction['state'] == 'pending') { ?>  
-                                    <option value="pending" selected>Pending</option> 
-                                    <option value="on processing">On Process</option>  
-                                    <option value="cancelled">Cancel</option>  
-                                    <option value="completed">Completed</option> 
-                                <?php } else if ($transaction['state'] == 'on processing') { ?>
-                                    <option value="on processing">On Process</option> 
-                                    <option value="completed">Completed</option> 
-                                <?php } else if ($transaction['state'] == 'cancelled') { ?>
-                                    <option value="cancelled">Cancelled</option> 
-                                <?php } else { ?>
-                                    <option value="completed">Completed</option>
-                                <?php } ?>
-                            </select>
-                            <input type="text" name="transactionID" value='<?= $transaction['transaction_id']; ?>' hidden>
+                                            <p class="text-center text-3xl font-bold mt-5">ORDER DETAILS:</p>
+                                            <p><b>Transaction ID: </b> <?= $transaction['transaction_id']?></p>
+                                            <p><b>Transaction Date: </b><?= $transaction['date']?></p>
+                                            <p><b>Account: </b><?= $transaction['fname']." ".$transaction['lname']; ?></p>
+                                            <p><b>Receiver Name: </b><?= $transaction['name']; ?></p>
+                                            <p><b>Email: </b><?= $transaction['email']; ?></p>
+                                            <p><b>Phone Number: </b><?= $transaction['phone_number']; ?></p>
+                                            <p><b>Process: </b><?= $transaction['process']; ?></p>
 
-                            <?php if ($transaction['state'] == 'cancelled' OR $transaction['state'] == 'completed') { ?>
-                                <button type="submit" name="saveState" disabled>SAVE</button>
-                            <?php } else { ?>
-                                <button type="submit" name="saveState">SAVE</button>
-                            <?php } ?>
-                        </form>
+                                            <?php if ($transaction['process'] == 'delivery' ) { ?>
+                                                <p class="text-center text-3xl  font-bold mt-5">DELIVERY DETAILS:</p>
+                                                <p><b>Address: </b><?= $transaction['address']; ?></p>
+                                            <?php } ?>
+
+                                            <select name="state" id="state" class="mt-10 ml-2 outline outline-offset-2 outline-[#221E3F] rounded-md h-[30px]">
+                                                <?php if ($transaction['state'] == 'pending') { ?>  
+                                                    <option value="pending" selected>Pending</option> 
+                                                    <option value="on processing">On Process</option>  
+                                                    <option value="cancelled">Cancel</option>  
+                                                    <option value="completed">Completed</option> 
+                                                <?php } else if ($transaction['state'] == 'on processing') { ?>
+                                                    <option value="on processing">On Process</option> 
+                                                    <option value="completed">Completed</option> 
+                                                <?php } else if ($transaction['state'] == 'cancelled') { ?>
+                                                    <option value="cancelled">Cancelled</option> 
+                                                <?php } else { ?>
+                                                    <option value="completed">Completed</option>
+                                                <?php } ?>
+                                            </select>
+                                            <input type="text" name="transactionID" value='<?= $transaction['transaction_id']; ?>' hidden>
+
+                                            <?php if ($transaction['state'] == 'cancelled' OR $transaction['state'] == 'completed') { ?>
+                                                <button name="saveState" disabled class="ml-1 rounded-lg bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-sm">SAVE</button>
+                                            <?php } else { ?>
+                                                <button name="saveState" class="ml-1 rounded-lg bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-sm">SAVE</button>
+                                            <?php } ?>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
-                
             </div>
-            <!-- <p class="pb-2 bg-[#9ed5f0] pl-20 text-white text-lg"><b>Date: </b><?= $date ?> <?= $dateDay ?></p>
-            <button class="ml-20 text-sm text-white mb-6 rounded-lg bg-[#67b0e7] p-2 text-white hover:bg-[#2986CC]"><a href="login.php?logout='1'" onclick="return confirm('Are you sure you want to logout?')"><img src="static/icons/logout.png" width="18" height="18"></a></button> -->
         </div>
-    </body>
+    </div>
 </body>
 
 </html>

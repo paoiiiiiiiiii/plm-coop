@@ -50,7 +50,7 @@ $time = date("h:i:sa");
                         </form>
                     </div>
 
-                    <div class="w-full flex h-[36rem] bg-[#FCE4BE] rounded-lg"> 
+                    <div class="w-full flex h-[36rem] bg-[#ffd695] rounded-lg"> 
                         <div class="justify-self-start w-full overflow-auto max-h-106 bg-white rounded-lg">
                             <table class="justify-self-stretch w-full m-auto">
                                     <thead class="font-semibold text-md bg-[#221E3F] text-white sticky top-0">
@@ -76,7 +76,7 @@ $time = date("h:i:sa");
                                             <td>In-Store</td>
                                         <?php } ?>
                                         <td><?= $transactions['cashier_name']; ?></td>
-                                        <td><a href='adminViewTransaction.php?transactionID=<?=$transactions['transaction_id'];?>'>View Details</a></td>
+                                        <td><a href='adminViewTransaction.php?transactionID=<?=$transactions['transaction_id'];?>'><button class="ml-1 rounded-lg bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-sm">View</button></a></td>
                                     </tr>
                             <?php endforeach; ?>
                             </table>
