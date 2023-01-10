@@ -64,16 +64,21 @@ $time = date("h:i:sa");
                                     <form method="post" action="staffProduct.php" class="mt-10">
                                         <div class="grid grid-rows-2 flex">
                                             <div class="flex justify-center items-centern mb-3">
-                                                <label class="text-left text-[#221E3F] text-xl "><b>Stock in Quantity: </b></label>
-                                                <input type="number" name="quantity" required min="1" class="rounded-md bg-[#efefef] p-1 text-sm w-32 ml-2">
+                                                <label class="text-left text-[#221E3F] text-xl "><b>Quantity: </b></label>
+                                                <input type="number" name="quantity" required min="1" max="<?= $product['product_quantity']?>" class="rounded-md bg-[#efefef] p-1 text-sm w-32 ml-2" >
                                                 <input type="number" name="productID" value="<?= $product['product_id'];?>" hidden ></input>
                                             </div>
 
                                             <div>
-                                                
-                                                <button class="ml-1 rounded-full w-full bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-lg" name="addCart">
-                                                    Add to Cart
-                                                </button>
+                                                <?php if ($product['product_quantity'] == '0') { ?> 
+                                                    <button class="ml-1 rounded-full w-full bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-lg" name="addCart" disabled>
+                                                        Add to Cart
+                                                    </button>
+                                                <?php } else { ?>
+                                                    <button class="ml-1 rounded-full w-full bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-lg" name="addCart">
+                                                        Add to Cart
+                                                    </button>
+                                                <?php } ?>
                                             </div>
                                         </div>
                                     </form>

@@ -86,7 +86,7 @@ $time = date("h:i:sa");
                                     <?php endforeach; ?>
                             <?php }?>
                             <?php if(!$category) {?>
-                                    <p>THERE ARE NO CATEGORIES!</p>
+                                <div class="text-lg text-[#221E3F] text-center"><p>THERE ARE NO PRODUCTS YET!</p></div>
                             <?php } ?>
                         </div>
                     </div>

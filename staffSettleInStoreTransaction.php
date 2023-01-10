@@ -50,7 +50,7 @@ $time = date("h:i:sa");
 
             <div class="mx-10 mb-4">
                 <p><b>Date: </b><?= $transaction['date'] ?></p>
-                <p><b>Cashier Name: </b><?= $transaction['cashier_name']?></p>
+                <p><b>Cashier Name: </b><?= $user['fname']." ".$user['lname']?></p>
             </div>
 
             <div class="mb-5 mx-10">

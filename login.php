@@ -1,6 +1,9 @@
 <?php 
 require_once('plmCoopServer.php');
 $coop = new CoopServer();
+
+$message = $coop->returnMessage();
+unset($_SESSION['message']);
 $user = $coop->loginUser();
 
 date_default_timezone_set('Asia/Manila');
@@ -67,7 +70,12 @@ $time = date("h:i:sa");
                                         <div class="flex justify-center items-center text-center mt-3">
                                             <a href="#" class="text-[#2274A5] text-center text-lg font-light">Forgot Password?</a>
                                         </div>
-                                        
+
+                                        <?php if ($message) { ?>
+                                            <div class="col-span-2 bg-[#ff6363] rounded-md pl-3 h-[40px] py-2 w-full flex justify-center mt-10">
+                                                <p onclick="this.parentElement.style.display='none';" class="text-white cursor-pointer text-md"><?= $message ?></p>                                            
+                                            </div>
+                                        <?php } ?>
                                     </form>
                                 </div>
                             </div>

@@ -110,7 +110,8 @@ Class CoopServer{
 			$userCount = $sql->rowCount();		
 
 			if ($userCount == 1){
-				echo("Username/email already exists");
+				$_SESSION['message'] = "Email/User already exists!";
+				header('location:register.php');
 			} else {
 				if (empty($email) or empty($password1) or empty($password2) or empty($firstname) or empty($lastname)or empty($phoneNum)or empty($userRole)) { 
 					echo("PLEASE FILL UP ALL THE FIELDS"); 
@@ -131,6 +132,15 @@ Class CoopServer{
 				}
 			}
 		}
+	}
+
+	public function adminChecker(){
+		$connection = $this->openConnection();
+		$sql = $connection->prepare("SELECT * FROM users WHERE role = 'admin'");
+		$sql->execute();
+		$adminCount = $sql->rowCount();
+
+		return $adminCount;
 	}
 
     public function home(){
@@ -316,6 +326,8 @@ Class CoopServer{
 			header ('location:login.php');
 		}
 	}
+
+// =========================================== CUSTOMER FUNCTIONS ======================================================
 
 	public function addToCart(){
 		if ($_SESSION['authentication']) {
@@ -1219,6 +1231,15 @@ Class CoopServer{
 		return $criticalItems;
 	}
 
+	public function getCritical(){
+		$connection = $this->openConnection();
+		$sql = $connection->prepare("SELECT * FROM products WHERE product_quantity <= 20;");
+		$sql->execute();
+		$inventory = $sql->fetchAll();
+
+		return $inventory;
+	}
+
 	public function getCustomers(){
 		$connection = $this->openConnection();
 		$sql = $connection->prepare("SELECT * FROM users WHERE role = 'customer';");
@@ -1534,7 +1555,7 @@ Class CoopServer{
 				if (isset($_GET['productID'])) {
 					$productID = $_GET['productID'];
 					$connection = $this->openConnection();
-					$sql = $connection->prepare("SELECT *,category.* FROM products INNER JOIN category ON products.product_category_id = category.category_id WHERE products.product_id = '$productID';");
+					$sql = $connection->prepare("SELECT *,category.*,products.thumbnail as pthumbnail FROM products INNER JOIN category ON products.product_category_id = category.category_id WHERE products.product_id = '$productID';");
 					$sql->execute();
 					$product = $sql->fetch();
 					return $product;

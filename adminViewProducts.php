@@ -42,7 +42,7 @@ $time = date("h:i:sa");
 
                             <form action="adminViewProducts.php" method="POST" enctype="multipart/form-data" class="w-full mt-5 grid grid-cols-2 gap-10"> 
                                 <div class="flex items-center">
-                                    <img src="thumbnails/<?= $product['thumbnail']?>" width="400" height="400">
+                                    <img src="thumbnails/<?= $product['pthumbnail']?>" width="400" height="400">
                                 </div>
                                 <div>
                                     <div class="input-group">

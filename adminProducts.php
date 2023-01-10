@@ -5,6 +5,7 @@ $user = $coop->home();
 $categoryCount = $coop->getCategoryCount();
 $productLine = $coop->getProductLine();
 $stockOnHand = $coop->getStocksOnHand();
+$criticalProduct = $coop->getCritical();
 
 $category = $coop->getCategory();
 $categoryDetails = $coop->getAdminProductCategory();
@@ -95,10 +96,10 @@ $counter1 = 0;
                                                 </tr>
                                             <?php endforeach; ?>
                                         <?php }?>
-                                        <?php if(!$category) {?>
-                                            <p>THERE ARE NO CATEGORIES!</p>
-                                        <?php } ?>
                                 </table>
+                                <?php if(!$category) {?>
+                                    <div class="mt-[10rem] text-lg text-[#221E3F] text-center"><p>THERE ARE NO CATEGORIES!</p></div>
+                                <?php } ?>
                             </div>
 
                             <div class="w-2/6 bg-[#FCE4BE] rounded-br-lg rounded-tr-lg pl-2">
@@ -215,8 +216,53 @@ $counter1 = 0;
                                         <?php endforeach; ?>
                                 <?php }?>
                                 <?php if(!$category) {?>
-                                        <p>THERE ARE NO CATEGORIES!</p>
+                                    <div class="mt-[10rem] text-lg text-[#221E3F] text-center"><p>THERE ARE NO PRODUCTS YET!</p></div>
                                 <?php } ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#FCE4BE] w-full h-[48rem] rounded-3xl mt-5 mb-10">
+                        <div class="w-full bg-[#FCE4BE] grid grid-cols-4 rounded-t-3xl px-10 pt-10 pb-5">
+                            <p class="text-4xl font-extrabold w-full px-3 text-[#221E3F] col-span-3">Critical Products</p>
+                            <p class="text-sm  w-full font-bold px-4 text-[#221E3F] col-span-3">Products with <= 20 quantity</p>
+                        </div>
+
+                        <div class="flex bg-[#FCE4BE] w-full h-[39rem] px-10">
+                            <div class="justify-self -start w-full bg-[#FCE4BE] overflow-auto max-h-106">
+                                <div class="w-full bg-[#ffd695] ">
+                                    <table class="justify-self-stretch w-full m-auto">
+                                            <thead class="font-semibold text-md bg-[#221E3F] text-white sticky top-0">
+                                                <td class="rounded-tl-lg"></td>
+                                                <td class="py-2">Product Code</td>
+                                                <td>Product Name</td>
+                                                <td>Product Price</td>
+                                                <td>Stocks on Hand</td>
+                                                <td class="rounded-tr-lg"></td>
+                                            </thead>
+                                            <?php if ($criticalProduct) { ?>
+                                                <?php foreach($criticalProduct as $products): ?>
+                                                        <tr class="cursor-pointer hover:bg-[#e8d2ae]">
+                                                            <td class="py-2 px-3"><img src="thumbnails/<?= $products['thumbnail']; ?>" height="50" width="50"></td>
+                                                            <td><?= $products['product_code']; ?></td>
+                                                            <td><?= $products['product_name']; ?></td>
+                                                            <td><?= $products['product_price']; ?></td>
+                                                            <td><?= $products['product_quantity']; ?></td>
+                                                            <td><a href='adminViewProducts.php?productID=<?= $products['product_id'];?>'><button class="ml-1 rounded-lg bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-sm">View</button></a></td>
+                                                        </tr>
+                                                <?php endforeach; ?>
+                                            <?php } else { ?>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td class="py-2">THERE ARE NO CRITICAL PRODUCTS</td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    <?php } ?>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
