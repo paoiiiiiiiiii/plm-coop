@@ -61,7 +61,7 @@ $user = $coop->home();
         </div>
         <div class=" leading-7 text-left text-sm font-thin mt-2 w-4/5 mx-auto" id="submenu">
           <a href="adminInStoreTransactions.php"><h1 class="cursor-pointer p-2 hover:bg-[#43365E] rounded-md mt-1">In-Store</h1></a>
-          <a href="adminOnlineTransactions.php"><h1 class="cursor-pointer p-2 hover:bg-[#43365E] rounded-md mt-1">Online</h1></a>
+          <!-- <a href="adminOnlineTransactions.php"><h1 class="cursor-pointer p-2 hover:bg-[#43365E] rounded-md mt-1">Online</h1></a> -->
           <a href="adminStockInTransactions.php"><h1 class="cursor-pointer p-2 hover:bg-[#43365E] rounded-md mt-1">Stock In</h1></a>
         </div>
         <!-- <a href="adminTransactions.php"><div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-[#43365E]">

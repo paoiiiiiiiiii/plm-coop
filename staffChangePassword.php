@@ -70,7 +70,15 @@ $time = date("h:i:sa");
                             </form>
 
                             <?php if ($message) { ?>
-                                <p><?= $message?></p>
+                            <?php if ($message == "CHANGE PASSWORD SUCCESSFUL!") {?>
+                                <div class="col-span-2 bg-[#1bcb00] rounded-md pl-3 h-[40px] py-2 w-full flex justify-center mt-10">
+                                    <p onclick="this.parentElement.style.display='none';" class="text-white cursor-pointer text-md"><?= $message ?></p>                                            
+                                </div>
+                            <?php } else { ?>
+                                <div class="col-span-2 bg-[#ff6363] rounded-md pl-3 h-[40px] py-2 w-full flex justify-center mt-10">
+                                    <p onclick="this.parentElement.style.display='none';" class="text-white cursor-pointer text-md"><?= $message ?></p>                                            
+                                </div>
+                            <?php } ?>
                             <?php } ?>
                         </div>
                     </div>

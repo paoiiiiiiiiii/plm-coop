@@ -43,10 +43,10 @@ $user = $coop->home();
           <i class="fa-solid fa-store text-gray-200"></i>
           <span class="text-[15px] ml-4 text-gray-200">In Store Transaction</span>
         </div></a>
-        <a href="staffOnlineTransaction.php"><div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-[#43365E]">
+        <!-- <a href="staffOnlineTransaction.php"><div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-[#43365E]">
           <i class="fa-solid fa-globe text-gray-200"></i>
           <span class="text-[15px] ml-4 text-gray-200">Online Transaction</span>
-        </div></a>
+        </div></a> -->
         <a href="staffTransactionHistory.php"><div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-[#43365E]">
           <i class="fa-solid fa-file text-gray-200 "></i>
           <span class="text-[15px] ml-4 text-gray-200">Transaction History</span>

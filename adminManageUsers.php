@@ -1,6 +1,7 @@
 <?php 
 require_once('plmCoopServer.php');
 $coop = new CoopServer();
+$roleChecker = $coop->roleChecker();
 $user = $coop->home();
 $users = $coop->getUsers();
 $filterRole = $coop->getUserRole();
@@ -90,7 +91,7 @@ $time = date("h:i:sa");
                                     <td class="py-3 px-2"><?= $userss['email']; ?></td>
                                     <td class="py-3 px-2"><?= $userss['phone_number']; ?></td>
                                     <td class="py-3 px-2"><a href="adminManageUsers.php?deleteUserID=<?= $userss['user_id']; ?>" onclick="return confirm('Are you sure you want to delete this user?')"><button class="ml-1 rounded-lg bg-[#d73a2f] px-4 text-white hover:bg-[#f85e53] text-white p-2 text-sm">Delete</button></a></td>
-                                    <td class="py-3 px-2"><a href='#'><button class="ml-1 rounded-lg bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-sm">View</button></a></td>                   
+                                    <td class="py-3 px-2"><a href='adminViewUser.php?userID=<?= $userss['user_id']?>'><button class="ml-1 rounded-lg bg-[#221E3F] px-4 text-white hover:bg-[#6257b4] text-white p-2 text-sm">View</button></a></td>                   
                                 </tr>
                             <?php endforeach; ?>
                             </table>

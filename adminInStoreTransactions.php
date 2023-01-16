@@ -1,6 +1,7 @@
 <?php 
 require_once('plmCoopServer.php');
 $coop = new CoopServer();
+$roleChecker = $coop->roleChecker();
 $user = $coop->home();
 $inStoreTransaction = $coop->getAdminTransactions('instore');
 // $filterTransactionProcess = $coop->returnTransactionProcess();

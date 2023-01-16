@@ -1,6 +1,7 @@
 <?php 
 require_once('plmCoopServer.php');
 $coop = new CoopServer();
+$roleChecker = $coop->roleChecker();
 $user = $coop->home();
 $monthlySale = $coop->getMonthlySales();
 $averageDailySale = round($monthlySale/23, 2);

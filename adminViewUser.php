@@ -2,9 +2,9 @@
 require_once('plmCoopServer.php');
 $coop = new CoopServer();
 $roleChecker = $coop->roleChecker();
-$user = $coop->home();
-$userProfile = $coop->getUserProfile();
-$userUpdate = $coop->updateProfile();
+$users = $coop->getStaffProfile();
+$userProfile = $coop->getStaffUserProfile();
+$update = $coop->updateAdminStaffProfile();
 
 date_default_timezone_set('Asia/Manila');
 $date = date("Y-m-d");
@@ -38,35 +38,33 @@ $time = date("h:i:sa");
                 <div>
                     <div class="grid grid-cols-2">
                         <p class="text-4xl font-extrabold w-full px-3 text-[#221E3F]">PROFILE OVERVIEW</p>
-                        <div class="flex justify-end">
-                            <a href="adminChangePassword.php" class="col-span-1 text-right"><button class="flex w-48 h-[40px] text-md text-white rounded-full bg-[#221E3F] px-4 text-white hover:bg-[#6257b4]"><p class="ml-3 mt-2">Change Password</p></button></a>
-                        </div>
                     </div>
                     <div class="w-full flex justify-center">
                         <div class="w-4/5 mt-5">
                             <p class="text-2xl font-extrabold w-full text-[#221E3F]">ACCOUNT DETAILS</p>
 
-                            <form method="post" action="adminViewProfile.php" class="w-full mt-5 grid grid-cols-2 gap-6"> 
+                            <form method="post" action="adminViewUser.php" class="w-full mt-5 grid grid-cols-2 gap-6"> 
                                 <div>
                                     <div class="input-group">
                                         <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">User ID</label></ul>
-                                        <input type="text" name="userID" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $user['user_id'] ?>" disabled>
+                                        <input type="text" name="userID" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $users['user_id'] ?>" disabled>
+                                        <input type="text" name="staffUserID" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $users['user_id'] ?>" hidden>
                                     </div>
                                     <div class="input-group">
                                         <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Email</label></ul>
-                                        <input type="email" name="email" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $user['email'] ?>">
+                                        <input type="email" name="email" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $users['email'] ?>">
                                     </div>
                                     <div class="input-group">
                                         <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">First Name</label></ul>
-                                        <input type="text" name="fname" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $user['fname'] ?>">
+                                        <input type="text" name="fname" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $users['fname'] ?>">
                                     </div>
                                     <div class="input-group">
                                         <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Last Name</label></ul>
-                                        <input type="text" name="lname" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $user['lname'] ?>">
+                                        <input type="text" name="lname" required class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $users['lname'] ?>">
                                     </div>
                                     <div class="input-group">
                                         <ul><label class="text-center text-[#221E3F] font-bold text-xl mb-3">Personal number</label></ul>
-                                        <input type="number" name="phoneNum" required minlength="11" maxlength="11" class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $user['phone_number'] ?>">
+                                        <input type="number" name="phoneNum" required minlength="11" maxlength="11" class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" value="<?= $users['phone_number'] ?>">
                                     </div>
 
                                 </div>
@@ -95,7 +93,7 @@ $time = date("h:i:sa");
                                 </div>
 
                                 <div class="flex justify-center col-span-2">
-                                    <button class="w-2/5 h-[40px] text-lg text-white mb-2 rounded-full bg-[#221E3F] px-4 py-1 text-white hover:bg-[#6257b4] mt-3" name="updateProfile">
+                                    <button class="w-2/5 h-[40px] text-lg text-white mb-2 rounded-full bg-[#221E3F] px-4 py-1 text-white hover:bg-[#6257b4] mt-3" name="updateStaffProfile">
                                         Update
                                     </button>
                                 </div>

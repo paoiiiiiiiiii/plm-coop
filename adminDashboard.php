@@ -1,6 +1,7 @@
 <?php 
 require_once('plmCoopServer.php');
 $coop = new CoopServer();
+$roleChecker = $coop->roleChecker();
 $user = $coop->home();
 $monthlySale = $coop->getMonthlySales();
 $dailySale = $coop->getDailySales();
@@ -77,7 +78,7 @@ $time = date("h:i:sa");
                             <a href="adminManageUsers.php"><div class="flex-1 bg-[#FFA15E] text-[#221E3F] rounded-3xl h-[10rem] mx-3 my-5 p-2 grid grid-cols-3 drop-shadow-xl items-center cursor-pointer"><div class="col-span-1 flex items-center justify-center pl-3"><img src="static/icons/customers.png" width="90" height="90"></div>
                                 <div class="col-span-2">
                                     <ul class="text-4xl font-bold text-left"><b><?= $numOfCustomers; ?></b></ul>  
-                                    <ul class="text-lg font-semibold text-left"><b>CUSTOMERS</b></ul> 
+                                    <ul class="text-lg font-semibold text-left"><b>STAFFS</b></ul> 
                                     <ul class="text-sm text-left">Total customers recorded on database</ul> 
                                 </div>
                             </div></a>

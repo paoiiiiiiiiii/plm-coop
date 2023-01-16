@@ -82,15 +82,13 @@ $time = date("h:i:sa");
                                                 <select name="userRole" id="userRole" class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]">  
                                                     <option value="admin">Admin</option>  
                                                     <option value="staff">Staff</option>  
-                                                    <option value="customer">Customer</option>  
                                                 </select>
                                             </div>
                                             <?php } else { ?>
                                                 <div class="input-group">
                                                 <select name="userRole" id="userRole" class="mt-3 bg-[#efefef] text-lg text-[#525252] h-[35px] w-full mb-2 p-1 rounded-xl outline outline-offset-2 outline-[3px] outline-[#2274A5]" hidden>  
                                                     <option value="admin">Admin</option>  
-                                                    <option value="staff">Staff</option>  
-                                                    <option value="customer" selected>Customer</option>  
+                                                    <option value="staff" selected>Staff</option>  
                                                 </select>
                                             </div>
                                             <?php } ?>

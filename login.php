@@ -68,7 +68,7 @@ $time = date("h:i:sa");
 
                                         
                                         <div class="flex justify-center items-center text-center mt-3">
-                                            <a href="#" class="text-[#2274A5] text-center text-lg font-light">Forgot Password?</a>
+                                            <a href="forgotpassword.php" class="text-[#2274A5] text-center text-lg font-light">Forgot Password?</a>
                                         </div>
 
                                         <?php if ($message) { ?>

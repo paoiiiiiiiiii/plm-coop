@@ -1,6 +1,7 @@
 <?php 
 require_once('plmCoopServer.php');
 $coop = new CoopServer();
+$roleChecker = $coop->roleChecker();
 $user = $coop->home();
 $totalMonthlySale = $coop->getMonthlySale();
 $topSellingItem = $coop->getMonthlyTopSellingItem();

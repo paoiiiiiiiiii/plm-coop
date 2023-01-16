@@ -1,10 +1,12 @@
 <?php 
 require_once('plmCoopServer.php');
 $coop = new CoopServer();
+$roleChecker = $coop->roleChecker();
 $user = $coop->home();
 $userProfile = $coop->getUserProfile();
 $product = $coop->getAdminTransactionProducts();
 $transaction = $coop->getAdminTransactionDetails();
+// $updateState = $coop->adminUpdateTransactionState();
 
 date_default_timezone_set('Asia/Manila');
 $date = date("Y-m-d");
@@ -154,6 +156,26 @@ $time = date("h:i:sa");
                     <table>
                 <?php } ?>
             </div>
+
+            <!-- <div>
+                <?php if ($transaction['state'] == 'completed') { ?>
+                    <form action="adminViewTransaction.php" method='post'>
+                        <select class="ml-2 outline outline-offset-2 outline-[#221E3F] rounded-md" required name='state'>
+                            <option value='<?= $transaction['state']?>' selected><?= ucfirst($transaction['state'])?></option>
+                            <option value='refunded'>Refunded</option>
+                        </select>
+                        <input name="transactionID" value="<?= $transaction['transaction_id']?>"></input>
+                        <button class="ml-3 mt-5 rounded-lg bg-[#67b0e7] text-white hover:bg-[#2986CC] p-1 text-sm" name='save'>Save</button>
+                    </form>
+                <?php } else { ?>
+                    <form action="adminViewTransaction.php" method='post'>
+                        <select class="ml-2 outline outline-offset-2 outline-[#221E3F] rounded-md" required name='state'>
+                            <option value='<?= $transaction['state']?>' selected><?= ucfirst($transaction['state'])?></option>
+                        </select>
+                        <button class="ml-3 mt-5 rounded-lg bg-[#67b0e7] text-white hover:bg-[#2986CC] p-1 text-sm" name='save' disabled>Save</button>
+                    </form>
+                <?php } ?>
+            </div> -->
 
         </div>
     </body>

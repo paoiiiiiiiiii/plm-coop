@@ -1,5 +1,5 @@
 <?php 
-//require_once('mailer.php');
+require_once('resetpasswordmailer.php');
 session_start();
 error_reporting(E_ALL & ~E_NOTICE);
 date_default_timezone_set('Asia/Manila');
@@ -134,6 +134,36 @@ Class CoopServer{
 		}
 	}
 
+	public function forgotpassword() {
+		if (isset($_POST['forgot_password'])){
+			$email = $_POST['email'];
+
+			$connection = $this->openConnection();
+			$sql = $connection->prepare("SELECT * FROM users WHERE email = '$email'");
+			$sql->execute();
+			$usercount = $sql->rowCount();
+
+			if ($usercount) {
+				$password = rand(100000,999999);
+				$mailer = new Mailer();
+				$sendEmail = $mailer->sendEmail($email, $password);
+				
+				$hashPassword = md5($password);
+				$sql = $connection->prepare("UPDATE users SET password = '$hashPassword' WHERE email = '$email'");
+				$sql->execute();
+
+				$_SESSION['message'] = "Email Sent!";
+
+				header('location:forgotpassword.php');
+			} else {
+				$_SESSION['message'] = "Invalid Credentials!";
+
+				header('location:forgotpassword.php');
+			}
+
+		}
+	}
+
 	public function adminChecker(){
 		$connection = $this->openConnection();
 		$sql = $connection->prepare("SELECT * FROM users WHERE role = 'admin'");
@@ -193,7 +223,141 @@ Class CoopServer{
 		}
 	}
 
+	public function getStaffProfile(){
+		if ($_SESSION['authentication']){
+			if (isset($_GET['userID'])){
+				$userID = $_GET['userID'];
+
+				$connection = $this->openConnection();
+				$sql = $connection->prepare("SELECT * FROM users WHERE user_id = '$userID';");
+				$sql->execute();
+				$user = $sql->fetch();
+	
+				return $user;
+			}
+		} else {
+			header('location:login.php');
+		}
+	}
+
+	public function getStaffUserProfile(){
+		if ($_SESSION['authentication']){
+			$userID = $_GET['userID'];
+
+			$connection = $this->openConnection();
+			$sql = $connection->prepare("SELECT * FROM user_profile WHERE user_id = '$userID';");
+			$sql->execute();
+			$user = $sql->fetch();
+
+			return $user;
+		} else {
+			header('location:login.php');
+		}
+	}
+
 	public function updateProfile(){
+		if ($_SESSION['authentication']) {
+			if(isset($_POST['updateProfile'])){
+				$activeUser = $_SESSION['id'];
+				$fname = $_POST['fname'];
+				$lname = $_POST['lname'];
+				$email = $_POST['email'];
+				$phoneNum = $_POST['phoneNum'];
+
+				$telNum = $_POST['telNum'];
+				$houseNo = $_POST['houseNo'];
+				$baranggay = $_POST['baranggay'];
+				$city = $_POST['city'];
+				$region = $_POST['region'];
+
+				$connection = $this->openConnection();
+				$sql = $connection->prepare("SELECT * FROM user_profile WHERE user_id = '$activeUser';");
+				$sql->execute();
+				$user = $sql->fetch();
+				$userCount = $sql->rowCount();
+
+				if ($userCount == 0) {
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("UPDATE users SET phone_number = '$phoneNum', email = '$email', fname = '$fname', lname = '$lname' WHERE user_id = '$activeUser'; ");
+					$sql->execute();
+
+					$sql = $connection->prepare("INSERT INTO user_profile VALUES ('$activeUser', '$telNum', '$houseNo', '$baranggay', '$city', '$region'); ");
+					$sql->execute();
+
+					if ($_SESSION['role'] == 'admin') {
+						header('location:adminViewProfile.php');
+					} else {
+						header('location:customerDashboard.php');
+					}
+					
+				} else {
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("UPDATE users SET phone_number = '$phoneNum', email = '$email', fname = '$fname', lname = '$lname' WHERE user_id = '$activeUser'; ");
+					$sql->execute();
+
+					$sql = $connection->prepare("UPDATE user_profile SET phone_number = '$telNum', house_no = '$houseNo', baranggay = '$baranggay', city = '$city', region = '$region' WHERE user_id = '$activeUser'; ");
+					$sql->execute();
+
+					
+					if ($_SESSION['role'] == 'admin') {
+						header('location:adminViewProfile.php');
+					} else {
+						header('location:customerDashboard.php');
+					}
+				}
+			}
+		} else {
+			header ('location:login.php');
+		}
+	}
+
+	public function updateAdminStaffProfile(){
+		if ($_SESSION['authentication']) {
+			if(isset($_POST['updateStaffProfile'])){
+				$activeUser = $_POST['staffUserID'];
+				$fname = $_POST['fname'];
+				$lname = $_POST['lname'];
+				$email = $_POST['email'];
+				$phoneNum = $_POST['phoneNum'];
+
+				$telNum = $_POST['telNum'];
+				$houseNo = $_POST['houseNo'];
+				$baranggay = $_POST['baranggay'];
+				$city = $_POST['city'];
+				$region = $_POST['region'];
+
+				$connection = $this->openConnection();
+				$sql = $connection->prepare("SELECT * FROM user_profile WHERE user_id = '$activeUser';");
+				$sql->execute();
+				$user = $sql->fetch();
+				$userCount = $sql->rowCount();
+
+				if ($userCount == 0) {
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("UPDATE users SET phone_number = '$phoneNum', email = '$email', fname = '$fname', lname = '$lname' WHERE user_id = '$activeUser'; ");
+					$sql->execute();
+
+					$sql = $connection->prepare("INSERT INTO user_profile VALUES ('$activeUser', '$telNum', '$houseNo', '$baranggay', '$city', '$region'); ");
+					$sql->execute();
+
+					header ('location:adminManageUsers.php');
+				} else {
+					$connection = $this->openConnection();
+					$sql = $connection->prepare("UPDATE users SET phone_number = '$phoneNum', email = '$email', fname = '$fname', lname = '$lname' WHERE user_id = '$activeUser'; ");
+					$sql->execute();
+
+					$sql = $connection->prepare("UPDATE user_profile SET phone_number = '$telNum', house_no = '$houseNo', baranggay = '$baranggay', city = '$city', region = '$region' WHERE user_id = '$activeUser'; ");
+					$sql->execute();
+
+					header ('location:adminManageUsers.php');
+				}
+			}
+		} else {
+			header ('location:login.php');
+		}
+	}
+
+	public function updateUserProfile(){
 		if ($_SESSION['authentication']) {
 			if(isset($_POST['updateProfile'])){
 				$activeUser = $_SESSION['id'];
@@ -1242,12 +1406,12 @@ Class CoopServer{
 
 	public function getCustomers(){
 		$connection = $this->openConnection();
-		$sql = $connection->prepare("SELECT * FROM users WHERE role = 'customer';");
+		$sql = $connection->prepare("SELECT * FROM users WHERE role = 'staff';");
 		$sql->execute();
-		$customer = $sql->fetchAll();
-		$customers = count($customer);
+		$staff = $sql->fetchAll();
+		$staffs = count($staff);
 
-		return $customers;
+		return $staffs;
 	}
 
 	public function getTransactions(){
@@ -1264,6 +1428,17 @@ Class CoopServer{
 
 		return $transactions;
 	}
+
+	// public function adminUpdateTransactionState(){
+	// 	if (isset($_POST['save'])){
+	// 		$state = $_POST['state'];
+	// 		$transactionID = $_POST['transactionID'];
+	// 		$connection = $this->openConnection();
+	// 		$sql = $connection->prepare("UPDATE transactions SET state = '$state' WHERE transaction_id = '$transactionID'");
+
+	// 		header('location:adminInStoreTransactions.php');
+	// 	}
+	// }
 
 	public function getUsers(){
 		if ($_SESSION['authentication']) {
@@ -3293,6 +3468,15 @@ Class CoopServer{
 
 	public function returnMessage(){
 		return $_SESSION['message'];
+	}
+
+	// ==================================== ROLE CHECKERS ===================================================
+	public function roleChecker(){
+		if ($_SESSION['role'] == 'admin'){
+
+		} else {
+			header ('location:noAccess.php');
+		}
 	}
 }
 //npx tailwindcss -i ./input.css -o ./output.css --watch
